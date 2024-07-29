@@ -1,0 +1,48 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# JetBrains IDE files
+.idea/
+.fleet/
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/bc/*
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+tsconfig.tsbuildinfo
+
+# debug
+npm-debug.log*
+npm-debug.log*
+npm-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+.npmrc
+
+# vercel
+.vercel
+/api-requests/*
+
+# vscode
+.vscode/*
+
+#File Develops
+develop-data.json
