@@ -48,4 +48,4 @@ npm-error.log*
 develop-data.json
 
 
-/completed-tests/test_runs/*
+/completed-tests
