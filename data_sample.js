@@ -30,11 +30,11 @@ const card_brands = [
 
 function generateTestRunId() {
     const currentDateInMs = Date.now();
-    return `test_run_id_${currentDateInMs}`;
+    return `${currentDateInMs}`;
 }
-function generateTestCaseId() {
+function generateTestCaseId(i) {
     const currentDateInMs = Date.now();
-    return `test_case_id_${currentDateInMs}`;
+    return `test_case_${i.toString()}`;
 }
 
 function getCard (){
@@ -48,3 +48,6 @@ function getPaymentRequestId (){
 
 
 module.exports = { getCard, generateRandomEmail, getPaymentRequestId, generateTestCaseId, generateTestRunId }
+
+
+//completed_tests/test_runs/test_run_164676746/1313213213 imagenes 
