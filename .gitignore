@@ -46,3 +46,6 @@ npm-error.log*
 
 #File Develops
 develop-data.json
+
+
+/completed-tests/test_runs/*
