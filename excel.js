@@ -22,13 +22,6 @@ const filePath = path.join(__dirname, `${_path}.xlsx`);
     })
 }
 
-const data = [
-    [1, 2, 3,4,5,6],
-    [true, false, null, 'sheetjs'],
-    ['foo', 'bar', new Date('2014-02-19T14:30Z'), '0.3'],
-    ['baz', null, 'qux'],
-  ];
-generateSheet(data, "mySheetName");
 
 
 module.exports = { generateSheet }

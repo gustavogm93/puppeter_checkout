@@ -7,6 +7,7 @@ const visa_card_brands = [
 
 const master_card_brands = [
 "5215956400364553",
+"5581168067405507",
 "5581168067405507"
 ]
 
@@ -44,6 +45,12 @@ function getPaymentRequestId (){
     return payment_request_ids
     }
 
+
+
+
+
+
+//For each por 8 generar array y obtener dee array lo que no se puede
 
 
 
