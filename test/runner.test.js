@@ -8,6 +8,7 @@ const {generateSheet} = require('../excel.js');
 const mlog = require('mocha-logger');
 const path = require('path');
 const { Cluster } = require('puppeteer-cluster');
+const { takeScreenshotAndSave } = require('./image/takeScreenshot.js')
 
 const { getCard, generateRandomEmail, getPaymentRequestId, generateTestCaseId, generateTestRunId } = require('../data_sample.js');
 /* const {expect} = require("chai");
@@ -26,6 +27,7 @@ describe("One Click",()=>{
     const test_case_id = generateTestCaseId(i);
     const cards = getCard();
     const card = cards[0];
+    const amount = "4.50"
     const email = generateRandomEmail();
     const phone = "1234567891"
     const payment_request_id = getPaymentRequestId();
@@ -42,7 +44,6 @@ describe("One Click",()=>{
    await page.setViewport({ width: 1280, height: 1080 });
    
   
-    const amount = "4.50"
 
     page.setDefaultTimeout(timeout);
     
@@ -83,21 +84,10 @@ describe("One Click",()=>{
 
         {
         //Save Checkout Form in screenshot
-        try {
-          const baseDir = process.cwd();
-          const pathImage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`
-          const buffer = await targetPage.screenshot({
-          path: pathImage,
-          fullPage: true
-        });
-        mlog.error(baseDir);
-        const filePath = path.join(baseDir, pathImage.indexOf(1));
-        mlog.error(filePath);
+        const pathImageForFormPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`
+        takeScreenshotAndSave(pathImageForFormPage, targetPage)
 
-        writeFile(filePath, buffer)
-      } catch(e) {
-        mlog.error(e + "Cannot save screenshot");
-      }
+
 
     }
           //Click in Pay
@@ -117,17 +107,11 @@ describe("One Click",()=>{
               });
       }
       {
-          /* checkElementsInLoadingTransition(targetPage, amount) */
-
+        //Wait for Loading transition page
           try {
                const selector = '[data-testid="SuccesPayment-decimal"]';
-               const expectedText = amount;    
-
                await page.waitForSelector(selector, { timeout: 60000 }); // 10 seconds timeout
-               const got_amount = await page.$eval('[data-testid="SuccesPayment-amount"]', el => el.textContent); 
-
-/*                assert(got_amount, expectedText, "Expected amount to be " + got_amount);
- */       } catch (e) {
+        } catch (e) {
            console.error(e, "--------------------------------");
            await browser.close();
        }     
@@ -135,32 +119,14 @@ describe("One Click",()=>{
 
     {
       //Save Success Page in screenshot
-      try {
-
-
-        const baseDir = process.cwd();
-        const pathImage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`
-
-      const buffer = await targetPage.screenshot({
-        path: pathImage,
-        fullPage: true
-      });
-      const filePath = path.join(baseDir, pathImage);
-
-      writeFile(filePath, buffer)
-    } catch(e) {
-      mlog.error(e + "Cannot save screenshot");
-    }
+      const pathImageForSuccessPayPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`
+      takeScreenshotAndSave(pathImageForSuccessPayPage, targetPage)
 
     status = "OK";
     const result_test_case = [test_case_id,card,email, phone, payment_request_id, payment_flow_type, amount,payment_request_type, "", status];
     results_run.push(result_test_case);
 
-    //fs create directory in ../completed_tests/test_runs/ called with the name of test_run_id
-
-
     generateSheet(results_run, `/completed_tests/test_runs/${test_run_id}/${test_run_id}`);
-     //write ecel 
   }
       await browser.close();
 
