@@ -17,8 +17,8 @@ const payment_request_ids = [
 
 function generateRandomEmail() {
     const prefix = 'for_guest_tests';
-    const randomString = Math.random().toString(36).substring(2, 10); // Generates a random string
-    const domain = 'example.com'; // You can change this to any domain you prefer
+    const randomString = Math.random().toString(36).substring(2, 10); 
+    const domain = 'example.com'; 
     return `${prefix}_${randomString}@${domain}`;
 }
 

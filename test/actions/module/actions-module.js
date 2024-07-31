@@ -1,0 +1,8 @@
+const {fillEmail} = require('../fillEmail.js');
+const {fillPhone} = require('../fillPhone.js');
+const {fillCard} = require('../fillCard.js');
+const {payCheckout} = require('../payCheckout.js');
+const {waitForPaymentTransition} = require('../waitForPaymentTransition.js');
+const {checkElementsInLoadingTransition} = require('../checkElementsInLoadingTransition.js');
+
+module.exports = { fillEmail, fillPhone, fillCard, waitForPaymentTransition, checkElementsInLoadingTransition, payCheckout}
