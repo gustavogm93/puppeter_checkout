@@ -9,7 +9,7 @@ const {
   waitForPaymentTransition,
 } = require("./actions/module/actions-module");
 const { writeFile, createDirectory } = require("../utils/fs_utils");
-const { generateSheet } = require("../excel");
+const { generateSheet, readSheet } = require("../excel");
 const { takeScreenshotAndSave } = require("./image/takeScreenshot");
 const { formatRequestLogs } = require("../utils/formatRequestLogs");
 const {
@@ -18,28 +18,13 @@ const {
   generateTestRunId,
 } = require("../data_sample");
 const { logHeader } = require("../utils/logger");
-
+const { convertExcelDataToObject } = require("../utils/convertExcelDataToObject");
 /* const {expect} = require("chai");
  */
 
 
-const handleResponse = async (response, request_log_list) => {
-  const request = response.request();
-  if (request.url().startsWith('https://dev-pago.payclip.com/api/')) {
-    const statusCode = await response.status();
-    const responseJson = await response.json();
-    request_log_list.push({
-      url: request.url(),
-      headers: JSON.stringify(request.headers()),
-      payload: request.postData(),
-      statusCode,
-      response: responseJson,
-      timestamp: new Date().toISOString(),
-    });
-  }
-};
-
-
+const PARAMETERS_SHEET_NAME = "parameters.xlsx"
+const TIMEOUT_WAIT_LOGS = 30000
 
 
 describe("One Click", () => {
@@ -50,10 +35,11 @@ describe("One Click", () => {
     //generate random int from 0 - 10000
     let i = 0;
     const test_run_id = generateTestRunId();
+    const baseDir = process.cwd();
 
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
-      maxConcurrency: 8,
+      maxConcurrency: 4,
     });
     await cluster.task(async ({ page, data }) => {
       const {
@@ -65,6 +51,7 @@ describe("One Click", () => {
         payment_flow_type,
         payment_request_type,
         request_log_list,
+        iterations,
         i,
       } = data;
       logHeader(data, "PARAMETERS");
@@ -72,7 +59,8 @@ describe("One Click", () => {
       
 
       //i less than 4
-      if (i < 4)
+
+     
         createDirectory(
           `completed_tests/test_runs/${test_run_id}`,
           test_case_id
@@ -86,26 +74,12 @@ describe("One Click", () => {
       const targetPage = page;
 
       targetPage.on("request", (request) => {
-        // if (request.resourceType() === 'image') request.abort()
+       if (request.resourceType() === 'image') request.abort()
 
         if (
           request?.url() &&
           request?.url().startsWith("https://dev-pago.payclip.com/api/")
         ) {
-          // mlog.log("--------------------------REQUEST 1111111111:  " + request.url() + "-------------------------------------");
-          // mlog.log("Request URL:", request.url());
-          // mlog.log("Request headers:", JSON.stringify(request.headers()));
-          // mlog.log("Request postData:", request.postData());
-          // mlog.log("----------------------------REQUEST   ------------------------------------");
-          // mlog.log("-------------------REQUEST URL:" + request.url() + "--------------------------------");
-          // mlog.log(request.url());
-          // mlog.log("\n");
-          // mlog.log("-------------------REQUEST HEADERS --------------------------------");
-          // mlog.log(request.headers());
-          // mlog.log("\n");
-          // mlog.log("-------------------REQUEST ALL --------------------------------");
-          // mlog.log(JSON.stringify(request));
-          // mlog.log("-------------------REQUEST ALL --------------------------------");
         }
         request.continue();
       });
@@ -183,7 +157,7 @@ describe("One Click", () => {
 
         //Click in Pay
         try {
-          await payCheckout(page);
+           await payCheckout(page);
         } catch (e) {
           mlog.error(e);
         }
@@ -191,7 +165,7 @@ describe("One Click", () => {
       {
         //Wait for Loading transition page
         try {
-          await waitForPaymentTransition(page);
+           await waitForPaymentTransition(page);
         } catch (e) {
           mlog.error(e);
         }
@@ -224,20 +198,14 @@ describe("One Click", () => {
 
           results_run.push(result_test_case);
 
-          if (results_run.length > 3) {
-            generateSheet(
-              results_run,
-              `/completed_tests/test_runs/${test_run_id}/${test_run_id}`
-            );
-          }
-
           logHeader({}, `Save logs: ${test_case_id}`);
           const path_logs_save =
             baseDir +
             `/completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/logs.txt`;
 
-            logHeader({}, `Write Excel results: ${test_case_id}`);
-          await writeFile(path_logs_save, formatRequestLogs(request_log_list));
+            logHeader({}, `Write Logs results: ${test_case_id}`);
+            setTimeout(async () => await writeFile(path_logs_save, formatRequestLogs(request_log_list), TIMEOUT_WAIT_LOGS))
+          
         } catch (e) {
           mlog.error(e, "--------------------------------");
         }
@@ -245,41 +213,51 @@ describe("One Click", () => {
     });
 
     const parameters = [];
-    const baseDir = process.cwd();
+
+    //Create Run directory
     createDirectory("completed_tests/test_runs", test_run_id);
-    for (let i = 0; i < 2; i++) {
-      // const prs = ["bdb2522e-8955-4c41-8b6a-bef29f9b55da",
-      // "9131e884-faf2-4416-ad26-4e29a8a8a0fd",
-      // "1ff71e00-dc73-4dd6-a01c-f63887a95542",
-      // "1ff71e00-dc73-4dd6-a01c-f63887a95542",
-      // ]
-      const prs = [
-        "9131e884-faf2-4416-ad26-4e29a8a8a0fd",
-        "9131e884-faf2-4416-ad26-4e29a8a8a0fd",
-        "9131e884-faf2-4416-ad26-4e29a8a8a0fd",
-        "9131e884-faf2-4416-ad26-4e29a8a8a0fd",
-      ];
+
+    const buffer = readSheet(PARAMETERS_SHEET_NAME)
+
+    //These are the parameters from excel.
+    const parametersFromSheet = convertExcelDataToObject(buffer)
+
+    if(!parametersFromSheet || parametersFromSheet.length === 0) {
+      mlog.error("No parameters found in the excel sheet.")
+      return;
+    }
+    
+    //Get number of test cases by iterations.
+    const ITERATIONS = parametersFromSheet.length;
+
+    for (let i = 0; i < ITERATIONS; i++) {
+      const data = parametersFromSheet[i];
+      const {cardNumber, prId, prType, paymentFlow} = data
+
       const value = {
         test_case_id: generateTestCaseId(i),
-        card: "5215956400364553", //cards[i],
+        card: cardNumber, //cards[i],
         email: generateRandomEmail(),
         phone: "1234567891",
-        payment_request_id: prs[i],
-        payment_flow_type: "GUEST",
-        payment_request_type: "HX",
+        payment_request_id: prId,
+        payment_flow_type: paymentFlow,
+        payment_request_type: prType,
         request_log_list: [],
+        iterations: ITERATIONS,
         i: i,
       };
       parameters.push(value);
     }
-
+  
     parameters.map((p) => {
       cluster.execute(p);
     });
-
+    
     await cluster.idle();
     await cluster.close();
 
+
+    logHeader({}, `Write Excel results: ${test_run_id}`);
     generateSheet(
       results_run,
       `/completed_tests/test_runs/${test_run_id}/${test_run_id}`
