@@ -2,7 +2,6 @@
 
 const HEADER_COLOR = `\x1b[7m` ; 
   const RESET = '\x1b[0m';
-
 const CONST_COLOR = `\x1b[34m` ; 
 const RESPONSE_COLOR = `\x1b[38;5;130m` ; 
 const LOW_IMPORTANCE_RESPONSE_COLOR = '\x1b[38;5;237m'
@@ -11,7 +10,7 @@ const addColorToText = (text, color) => {
 }
 
 
-  function formatRequestLogs2(requests) {
+  function formatRequestLogs(requests) {
     return requests.map(request => {
       const correctCodes = [200, 201, 204]
       const codeSymbol = correctCodes.includes(request.statusCode) ? '🟢' : '🔴' 
@@ -47,34 +46,4 @@ ${addColorToText("timestamp:", CONST_COLOR)}  ${addColorToText(request.timestamp
 
 
 
-  console.log(formatRequestLogs2(requests));
-
-
-
-function formatRequestLogs(requests) {
-  return requests.map(request => {
-    const correctCodes = [200, 201, 204]
-    const codeSymbol = correctCodes.includes(request.statusCode) ? '🟢' : '🔴' 
-    return `[{ ⬇️  - HTTP Request - ⬇️ 
-"${request.url}"
-
-${codeSymbol} HTTP Status: ${request.statusCode}
-
-HTTP Headers: 
-${request.headers}
-
-payload: 
-${JSON.stringify(request?.payload)}
-
-response:
-"${JSON.stringify(request?.response)}"
-
-🕐 timestamp:
-"${request.timestamp}"
-
-}]\n\n`;
-  }).join('\n');
-}
-
-
-  module.exports = { formatRequestLogs, formatRequestLogs2 }
+  module.exports = { formatRequestLogs }

@@ -1,0 +1,89 @@
+
+[{ ⬇️  https://dev-pago.payclip.com/api/oneClick/clipDetectCustomer  
+
+HTTP Status:  404 🔴
+
+HTTP Headers:  {"sec-ch-ua":"\"Chromium\";v=\"127\", \"Not)A;Brand\";v=\"99\"","content-type":"text/plain;charset=UTF-8","referer":"https://dev-pago.payclip.com/9131e884-faf2-4416-ad26-4e29a8a8a0fd","accept-language":"en-US","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/127.0.0.0 Safari/537.36","sec-ch-ua-platform":"\"macOS\"","accept":"*/*","cookie":"ajs_user_id=64733935-7d05-4512-8a12-a0c26113d21d; ajs_anonymous_id=e6af699b-6c25-4b8e-a450-7f4c6d35b81f; _dd_s=rum=2&id=f12e7550-506d-418f-9772-a8e665ecc70e&created=1722405868538&expire=1722406770056&logs=1","origin":"https://dev-pago.payclip.com"}  
+
+payload:  {"email":"for_guest_tests_729xhh90@example.com","paymentRequestId":"9131e884-faf2-4416-ad26-4e29a8a8a0fd"}  
+
+response:  "Failed to get customer" 
+
+timestamp:  2024-07-31T06:04:30.929Z 🕐 
+  
+  }]
+
+
+[{ ⬇️  https://dev-pago.payclip.com/api/installments  
+
+HTTP Status:  200 🟢
+
+HTTP Headers:  {"sec-ch-ua":"\"Chromium\";v=\"127\", \"Not)A;Brand\";v=\"99\"","content-type":"text/plain;charset=UTF-8","referer":"https://dev-pago.payclip.com/9131e884-faf2-4416-ad26-4e29a8a8a0fd","accept-language":"en-US","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/127.0.0.0 Safari/537.36","sec-ch-ua-platform":"\"macOS\"","accept":"*/*","cookie":"ajs_user_id=64733935-7d05-4512-8a12-a0c26113d21d; ajs_anonymous_id=e6af699b-6c25-4b8e-a450-7f4c6d35b81f; _dd_s=rum=2&id=f12e7550-506d-418f-9772-a8e665ecc70e&created=1722405868538&expire=1722406770056&logs=1","origin":"https://dev-pago.payclip.com"}  
+
+payload:  {"bin":"52159564","amount":"4.50","paymentRequestId":"9131e884-faf2-4416-ad26-4e29a8a8a0fd","brand":"MASTERCARD","requestCode":"R2XB6RL7","paymentsApiEnabled":true}  
+
+response:  {"installment_response":{"installments":[]},"dcc_quotation_response":null} 
+
+timestamp:  2024-07-31T06:04:31.438Z 🕐 
+  
+  }]
+
+
+[{ ⬇️  https://dev-pago.payclip.com/api/oneClick/clipEnrollment  
+
+HTTP Status:  200 🟢
+
+HTTP Headers:  {"sec-ch-ua":"\"Chromium\";v=\"127\", \"Not)A;Brand\";v=\"99\"","content-type":"text/plain;charset=UTF-8","referer":"https://dev-pago.payclip.com/9131e884-faf2-4416-ad26-4e29a8a8a0fd","accept-language":"en-US","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/127.0.0.0 Safari/537.36","sec-ch-ua-platform":"\"macOS\"","accept":"*/*","cookie":"ajs_user_id=64733935-7d05-4512-8a12-a0c26113d21d; ajs_anonymous_id=e6af699b-6c25-4b8e-a450-7f4c6d35b81f; _dd_s=rum=2&id=f12e7550-506d-418f-9772-a8e665ecc70e&created=1722405868538&expire=1722406772069&logs=1","origin":"https://dev-pago.payclip.com"}  
+
+payload:  {"email":"for_guest_tests_729xhh90@example.com","phone_number":"1234567891","country_code":"MX"}  
+
+response:  {"customer_id":"ef499ee2-c1c0-484e-9f2e-d42b0742bbfb"} 
+
+timestamp:  2024-07-31T06:04:33.041Z 🕐 
+  
+  }]
+
+
+[{ ⬇️  https://dev-pago.payclip.com/api/clipPaymentProcess  
+
+HTTP Status:  200 🟢
+
+HTTP Headers:  {"sec-ch-ua":"\"Chromium\";v=\"127\", \"Not)A;Brand\";v=\"99\"","content-type":"text/plain;charset=UTF-8","referer":"https://dev-pago.payclip.com/9131e884-faf2-4416-ad26-4e29a8a8a0fd","accept-language":"en-US","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/127.0.0.0 Safari/537.36","sec-ch-ua-platform":"\"macOS\"","accept":"*/*","cookie":"ajs_user_id=64733935-7d05-4512-8a12-a0c26113d21d; ajs_anonymous_id=e6af699b-6c25-4b8e-a450-7f4c6d35b81f; _dd_s=rum=2&id=f12e7550-506d-418f-9772-a8e665ecc70e&created=1722405868538&expire=1722406772069&logs=1","origin":"https://dev-pago.payclip.com"}  
+
+payload:  {"credit_card":{"card_no":"","customer":{"first_name":"xubkOgMqPvV1BCU3u/tAAAN+0krd6dIXIIUFulbtxX/lUqEnd21Eq/696KSK8owD7kimWGFdFiWH4RH44KlOQfDhauTSsopOWtL2hfk5eZhbquiHXCZquaMGfPszllcgRh0o6rkYGoq3a7Y3NxXnJNOQX2Y8nXCKeD8KH/m9ROwHJbqA1s4Q7WSsjujPHKkj+jgI0pAJJwDfKDyA1Vi0rojTJx3BOCtjftqXfjb8VbyNwVwdTDPGQNLk281pQgHhi3M2jjftXteskq+3++N64W+Ws50FapCS+aWzkPEHPypWFRc9GAcP5+/LrOPt8qwMVCxujsvfUTyR2A583x9RwOsyn/96IzjiLdblGydieiVR8wRYdIJztI2P6fj9aKbohasXpvDjm1HYa0keFB/sDFYxzI/Hz713ZHhPHExvkyWuprGi+kc9nhHMoAW/3wrd9E3rU4DQp96TAaijqviQnZTduCLv8HlBihQMEnVZ+14ry8Xho9n1+6iZxptkfG27zfBBCrmV54ZoMXbdYDv/HMQv68YtUYW1H56b2RbmypNnhypbV4AebzkVkmej0Kue3DY8zNqpwDvZoaWicukxAUGKtRlvvdbPy4UcmJ80O+2dTSHCMl+WKLNfA5Vz00EkJ8khdIYXQjL15goyJhcfRRNeTIrUDsP86Q3QmF//ALs="},"cvv":"","exp_date":"","owner":{"id":"ef499ee2-c1c0-484e-9f2e-d42b0742bbfb","type":"customer_one_click"},"save_card":true,"source":{"id":"9131e884-faf2-4416-ad26-4e29a8a8a0fd","type":"payment_request"},"token":"09949a10-70c3-493a-98ff-d87fd2e7f5ab"},"request":{"consumer_phone_number":"1234567891","consumer_phone_country_code":"MX","payment_request_id":"9131e884-faf2-4416-ad26-4e29a8a8a0fd","payment_request_code":"R2XB6RL7","customer_email":"FOR_GUEST_TESTS_729XHH90@EXAMPLE.COM","payment_link":"https://dev-pago.payclip.com/9131e884-faf2-4416-ad26-4e29a8a8a0fd","type_link":"pad-multi-payment","source_link":"","buyerMemorizeData":true},"prevention_data":{"session_id":"3e7d6c74-c6f6-4c91-88a7-255c0078fe77","source":"desktop","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/127.0.0.0 Safari/537.36","device_finger_print_token":"3e7d6c74-c6f6-4c91-88a7-255c0078fe77"},"tip":"0","merch_inv_id":"","JWT1click":null}  
+
+response:  {"type":"status_response","status_response":{"receipt_no":"IrHYbZy","merch_inv_id":"","decline_code":null,"cancel_status":null,"void_available":null,"id":"7b6e0f3b-eb32-4c9b-a794-c3c126587ed3","status":1,"status_message":"approved","sub_status":{"code":1,"message":"paid","detail":"AP-PAI01"},"payment3ds":false,"clip3ds_url":null,"provider3ds":null,"dcc":null,"transaction_id":"9b8e0660-84dd-409a-9610-45b1b9d8ebd1","paid_at":"2024-07-31T06:04:39.125418942Z"},"flowPayment1Click":"1CLICK_ENROLLMENT","installment_response":null,"customer":{"id":"ef499ee2-c1c0-484e-9f2e-d42b0742bbfb","otp_nonce":""}} 
+
+timestamp:  2024-07-31T06:04:39.246Z 🕐 
+  
+  }]
+
+
+[{ ⬇️  https://dev-pago.payclip.com/api/clipMetrics  
+
+HTTP Status:  200 🟢
+
+HTTP Headers:  {"sec-ch-ua":"\"Chromium\";v=\"127\", \"Not)A;Brand\";v=\"99\"","content-type":"text/plain;charset=UTF-8","referer":"https://dev-pago.payclip.com/9131e884-faf2-4416-ad26-4e29a8a8a0fd","accept-language":"en-US","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/127.0.0.0 Safari/537.36","sec-ch-ua-platform":"\"macOS\"","accept":"*/*","cookie":"ajs_user_id=64733935-7d05-4512-8a12-a0c26113d21d; ajs_anonymous_id=e6af699b-6c25-4b8e-a450-7f4c6d35b81f; _dd_s=rum=2&id=f12e7550-506d-418f-9772-a8e665ecc70e&created=1722405868538&expire=1722406772069&logs=1","origin":"https://dev-pago.payclip.com"}  
+
+payload:  {"metricName":"payment_status","value":1,"tags":{"flow":"1CLICK_ENROLLMENT","status":"approved","core_service":"payments-api"}}  
+
+response:  {"message":"process completed"} 
+
+timestamp:  2024-07-31T06:04:39.683Z 🕐 
+  
+  }]
+
+
+[{ ⬇️  https://dev-pago.payclip.com/api/oneClick/clipWelcome  
+
+HTTP Status:  200 🟢
+
+HTTP Headers:  {"sec-ch-ua":"\"Chromium\";v=\"127\", \"Not)A;Brand\";v=\"99\"","content-type":"text/plain;charset=UTF-8","referer":"https://dev-pago.payclip.com/9131e884-faf2-4416-ad26-4e29a8a8a0fd","accept-language":"en-US","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/127.0.0.0 Safari/537.36","sec-ch-ua-platform":"\"macOS\"","accept":"*/*","cookie":"ajs_user_id=64733935-7d05-4512-8a12-a0c26113d21d; ajs_anonymous_id=e6af699b-6c25-4b8e-a450-7f4c6d35b81f; _dd_s=rum=2&id=f12e7550-506d-418f-9772-a8e665ecc70e&created=1722405868538&expire=1722406772069&logs=1","origin":"https://dev-pago.payclip.com"}  
+
+payload:  {"paymentId":"7b6e0f3b-eb32-4c9b-a794-c3c126587ed3"}  
+
+response:  {} 
+
+timestamp:  2024-07-31T06:04:40.144Z 🕐 
+  
+  }]

@@ -9,7 +9,7 @@ const mlog = require('mocha-logger');
 const path = require('path');
 const { Cluster } = require('puppeteer-cluster');
 const { takeScreenshotAndSave } = require('./image/takeScreenshot.js')
-const { formatRequestLogs2 } = require('../utils/formatRequestLogs.js');
+const { formatRequestLogs } = require('../utils/formatRequestLogs.js');
 
 const { getCard, generateRandomEmail, getPaymentRequestId, generateTestCaseId, generateTestRunId } = require('../data_sample.js');
 /* const {expect} = require("chai");
@@ -31,6 +31,8 @@ describe("One Click",()=>{
     });
     //p.test_case_id, p.card, p.amount, p.email, p.phone, p.payment_request_id, p.payment_flow_type, p.payment_request_type,p.test_run_id, p.baseDir
     await cluster.task(async ({ page, data: [test_case_id, card, email, phone, payment_request_id, payment_flow_type, payment_request_type, test_run_id, baseDir, request_log_list, i] }) => {
+    
+      
       mlog.log("----------------------------------------------------------------")
       mlog.log("       values                                                   ")
 
@@ -88,10 +90,8 @@ describe("One Click",()=>{
     targetPage.on('response', async (response) => {
       const request = response.request();
       if(request?.url() && request?.url()?.startsWith("https://dev-pago.payclip.com/api/")) {
-        mlog.error("llego aca");
         const statusCode = await response?.status();
         const responseJson = await response?.json();
-        mlog.error("llego aca2");
         const request_log = {
           url: request.url(),
           headers: JSON.stringify(request.headers()),
@@ -156,19 +156,19 @@ describe("One Click",()=>{
 
             //Click in Pay
 
-            // await puppeteer.Locator.race([
-            //     targetPage.locator('::-p-aria(clip)'),
-            //     targetPage.locator("[data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img"),
-            //     targetPage.locator('::-p-xpath(//*[@data-testid=\\"paymentButton-ctaPrincipal\\"]/span[1]/img)'),
-            //     targetPage.locator(":scope >>> [data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img")
-            // ])
-            //     .setTimeout(timeout)
-            //     .click({
-            //       offset: {
-            //         x: 11.1875,
-            //         y: 5,
-            //       },
-            //     });
+            await puppeteer.Locator.race([
+                targetPage.locator('::-p-aria(clip)'),
+                targetPage.locator("[data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img"),
+                targetPage.locator('::-p-xpath(//*[@data-testid=\\"paymentButton-ctaPrincipal\\"]/span[1]/img)'),
+                targetPage.locator(":scope >>> [data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img")
+            ])
+                .setTimeout(timeout)
+                .click({
+                  offset: {
+                    x: 11.1875,
+                    y: 5,
+                  },
+                });
         }
         {
           //Wait for Loading transition page
@@ -189,22 +189,29 @@ describe("One Click",()=>{
         mlog.log("       Save screenshot for success pay page: " + test_case_id)
         mlog.log("----------------------------------------------------------------")
 
-
+        try {
         //Save Success Page in screenshot
-        const pathImageForSuccessPayPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`
-        await takeScreenshotAndSave(pathImageForSuccessPayPage, targetPage, baseDir)
+
+      const pathImageForSuccessPayPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`
+      await takeScreenshotAndSave(pathImageForSuccessPayPage, targetPage, baseDir)
       const status = "OK";
       const result_test_case = [test_case_id,card,email, phone, payment_request_id, payment_flow_type, displayed_amount,payment_request_type, "", status];
 
       results_run.push(result_test_case);
+
       if(results_run.length > 3) {
       generateSheet(results_run, `/completed_tests/test_runs/${test_run_id}/${test_run_id}`);
       }
-      const path_logs =  path.join(baseDir, `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/logs.txt`);
-    
-      writeFile(path_logs, formatRequestLogs2(request_log_list));
 
-      await browser.close();
+      const path_logs_save =  baseDir + `/completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/logs.txt`;
+      mlog.log(path_logs_save + "----------------------------------------------------------------");
+
+      await writeFile(path_logs_save, formatRequestLogs(request_log_list));
+
+    } catch(e) {
+      mlog.error(e, "--------------------------------");
+
+      }
     }
     });
     
@@ -247,6 +254,7 @@ parameters.map((p)=>{
     await cluster.close();
   
       
+    generateSheet(results_run, `/completed_tests/test_runs/${test_run_id}/${test_run_id}`);
 
 
      });
