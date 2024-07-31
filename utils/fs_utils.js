@@ -42,6 +42,29 @@ async function createDirectory(relativePath, folderName) {
   }
 
 
+  
+  function prependToFile(newString) {
+    const path = 'output.txt';
 
+    // Read the existing content of the file
+    fs.readFile(path, 'utf8', (err, data) => {
+        if (err && err.code !== 'ENOENT') {
+            console.error('Error reading the file:', err);
+            return;
+        }
+        
+        // Create the new content by prepending the new string
+        const updatedContent = `${newString}\n${data || ''}`;
+        
+        // Write the updated content back to the file
+        fs.writeFile(path, updatedContent, 'utf8', (err) => {
+            if (err) {
+                console.error('Error writing to the file:', err);
+                return;
+            }
+            console.log('File updated successfully');
+        });
+    });
+}
 
-module.exports = {writeFile, createDirectory};
+module.exports = {writeFile, createDirectory, prependToFile};
