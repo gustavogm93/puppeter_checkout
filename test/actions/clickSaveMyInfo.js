@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer");
 
 async function clickSaveMyInfo(page) {
   {
+    const timeout = 12000;
     const targetPage = page;
     await puppeteer.Locator.race([
       targetPage.locator(
@@ -16,8 +17,8 @@ async function clickSaveMyInfo(page) {
       .setTimeout(timeout)
       .click({
         offset: {
-          x: 9,
-          y: 10.5,
+          x: 10,
+          y: 6.5,
         },
       });
   }

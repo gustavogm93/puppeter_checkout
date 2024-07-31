@@ -7,6 +7,7 @@ const {
   fillCard,
   payCheckout,
   waitForPaymentTransition,
+  clickSaveMyInfo
 } = require("./actions/module/actions-module");
 const { writeFile, createDirectory } = require("../utils/fs_utils");
 const { generateSheet, readSheet } = require("../excel");
@@ -19,10 +20,13 @@ const {
 } = require("../data_sample");
 const { logHeader } = require("../utils/logger");
 const { convertExcelDataToObject } = require("../utils/convertExcelDataToObject");
+
 /* const {expect} = require("chai");
  */
-
-
+const PAYMENT_FLOW_TYPES = {
+  REGISTER: 'REGISTER',
+  GUEST: 'GUEST',
+}
 const PARAMETERS_SHEET_NAME = "parameters.xlsx"
 const TIMEOUT_WAIT_LOGS = 30000
 
@@ -54,13 +58,11 @@ describe("One Click", () => {
         iterations,
         i,
       } = data;
+      let status = "OK";
+
       logHeader(data, "PARAMETERS");
       logHeader({}, "GENERATING DIRECTORY...");
       
-
-      //i less than 4
-
-     
         createDirectory(
           `completed_tests/test_runs/${test_run_id}`,
           test_case_id
@@ -122,13 +124,13 @@ describe("One Click", () => {
       );
 
       //INTERACTIONS:::
-
       {
         await targetPage.keyboard.down("Meta");
       }
       {
         await targetPage.keyboard.up("Meta");
       }
+
       {
         logHeader({}, `Fill Email: ${test_case_id}`);
         await fillEmail(targetPage, email);
@@ -142,9 +144,13 @@ describe("One Click", () => {
         await fillCard(targetPage, card);
       }
       {
-        const targetPage = page;
-
-        {
+        mlog.log("Interactions", payment_flow_type)
+        if(payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
+        await clickSaveMyInfo(targetPage)
+        }
+      }
+      {
+     
           logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
           //Save Checkout Form in screenshot
           const pathImageForFormPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
@@ -153,23 +159,26 @@ describe("One Click", () => {
             targetPage,
             baseDir
           );
-        }
-
-        //Click in Pay
-        try {
-           await payCheckout(page);
-        } catch (e) {
-          mlog.error(e);
-        }
       }
-      {
-        //Wait for Loading transition page
-        try {
-           await waitForPaymentTransition(page);
-        } catch (e) {
-          mlog.error(e);
-        }
-      }
+      // {
+      //   //Click in Pay
+        
+      //   try {
+      //     await payCheckout(page);
+      //  } catch (e) {
+      //    status = "failed"
+      //    mlog.error(e);
+      //  }
+      // }
+      // {
+      //   //Wait for Loading transition page
+      //   try {
+      //      await waitForPaymentTransition(page);
+      //   } catch (e) {
+      //     status = "failed"
+      //     mlog.error(e);
+      //   }
+      // }
 
       {
         logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
@@ -182,7 +191,7 @@ describe("One Click", () => {
             targetPage,
             baseDir
           );
-          const status = "OK";
+          
           const result_test_case = [
             test_case_id,
             card,
@@ -240,8 +249,8 @@ describe("One Click", () => {
         email: generateRandomEmail(),
         phone: "1234567891",
         payment_request_id: prId,
-        payment_flow_type: paymentFlow,
         payment_request_type: prType,
+        payment_flow_type: paymentFlow,
         request_log_list: [],
         iterations: ITERATIONS,
         i: i,

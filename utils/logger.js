@@ -17,7 +17,7 @@ try {
 
   return paddedHeader;
 } catch (e) {
-  mlog.error("que da est" + e);
+  mlog.error(e);
 }
 }
 
