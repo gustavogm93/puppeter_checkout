@@ -2,6 +2,9 @@ const puppeteer = require('puppeteer')
 const {fillEmail} = require('./actions/fillEmail.js');
 const {fillPhone} = require('./actions/fillPhone.js');
 const {fillCard} = require('./actions/fillCard.js');
+const {payCheckout} = require('./actions/payCheckout.js');
+const {waitForPaymentTransition} = require('./actions/waitForPaymentTransition.js');
+
 const {checkElementsInLoadingTransition} = require('./actions/checkElementsInLoadingTransition.js');
 const {  writeFile, createDirectory, prependToFile} = require('../utils/fs_utils.js')
 const {generateSheet} = require('../excel.js');
@@ -149,38 +152,16 @@ describe("One Click",()=>{
           //Save Checkout Form in screenshot
           const pathImageForFormPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`
           await takeScreenshotAndSave(pathImageForFormPage, targetPage, baseDir)
-
-  
   
       }   
 
             //Click in Pay
 
-            await puppeteer.Locator.race([
-                targetPage.locator('::-p-aria(clip)'),
-                targetPage.locator("[data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img"),
-                targetPage.locator('::-p-xpath(//*[@data-testid=\\"paymentButton-ctaPrincipal\\"]/span[1]/img)'),
-                targetPage.locator(":scope >>> [data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img")
-            ])
-                .setTimeout(timeout)
-                .click({
-                  offset: {
-                    x: 11.1875,
-                    y: 5,
-                  },
-                });
+            await payCheckout()
         }
         {
           //Wait for Loading transition page
-
-            try {
-                 const selector = '[data-testid="SuccesPayment-decimal"]';
-                 await page.waitForSelector(selector, { timeout: 999999 }); 
-          } catch (e) {
-            await page.waitForSelector(selector, { timeout: 999999 });
-             console.error(e, "--------------------------------");
-             await browser.close();
-         }     
+          waitForPaymentTransition(page);
        }
   
       {
