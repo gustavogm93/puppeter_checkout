@@ -5,7 +5,7 @@ const HEADER_COLOR = `\x1b[7m` ;
 
 const CONST_COLOR = `\x1b[34m` ; 
 const RESPONSE_COLOR = `\x1b[38;5;132m` ; 
-
+const LOW_IMPORTANCE_RESPONSE_COLOR = '\x1b[38;5;144m'
 const addColorToText = (text, color) => {
   return `${color}${text}${RESET}`;
 }
@@ -20,7 +20,7 @@ const addColorToText = (text, color) => {
 
 ${addColorToText("HTTP Status:", CONST_COLOR)}  ${addColorToText(request.statusCode, RESPONSE_COLOR)} ${codeSymbol}
 
-${addColorToText("HTTP Headers:", CONST_COLOR)}  ${addColorToText(request.headers, RESPONSE_COLOR)}  
+${addColorToText("HTTP Headers:", CONST_COLOR)}  ${addColorToText(request.headers, LOW_IMPORTANCE_RESPONSE_COLOR)}  
 
 ${addColorToText("payload:", CONST_COLOR)}  ${addColorToText(request.payload, RESPONSE_COLOR)}  
 
