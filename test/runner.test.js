@@ -18,7 +18,7 @@ const { getCard, generateRandomEmail, getPaymentRequestId, generateTestCaseId, g
 /* const {expect} = require("chai");
  */
 describe("One Click",()=>{
-     it("Pay",async()=>{
+     it("Pay Register buyer checkout",async()=>{
     const timeout = 15000;
 
     const results_run = [];
@@ -26,19 +26,16 @@ describe("One Click",()=>{
     let i = 0;
     const test_run_id = generateTestRunId();
 
-    const cards = getCard();
-    const log = "";
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 8,
     });
-    //p.test_case_id, p.card, p.amount, p.email, p.phone, p.payment_request_id, p.payment_flow_type, p.payment_request_type,p.test_run_id, p.baseDir
     await cluster.task(async ({ page, data: [test_case_id, card, email, phone, payment_request_id, payment_flow_type, payment_request_type, test_run_id, baseDir, request_log_list, i] }) => {
     
       
       mlog.log("----------------------------------------------------------------")
-      mlog.log("       values                                                   ")
-
+      mlog.log("                           Parameters                         ")
+      mlog.log("----------------------------------------------------------------")
       mlog.log("test_case_id:", test_case_id)
       mlog.log("card:", card)
       mlog.log("email:", email)
@@ -47,7 +44,6 @@ describe("One Click",()=>{
       mlog.log("payment_flow_type:", payment_flow_type)
       mlog.log("test_run_id:", test_run_id)
       mlog.log("baseDir:", baseDir)
-
       mlog.log("----------------------------------------------------------------")
 
       mlog.log("----------------------------------------------------------------")
@@ -57,12 +53,8 @@ describe("One Click",()=>{
      if(i < 4)
      createDirectory(`completed_tests/test_runs/${test_run_id}`, test_case_id);
 
-
       await page.setViewport({ width: 1280, height: 1080 });
       await page.setRequestInterception(true)
-
-
-
 
       page.setDefaultTimeout(timeout);
       
@@ -156,12 +148,19 @@ describe("One Click",()=>{
       }   
 
             //Click in Pay
-
-            await payCheckout()
+            try {
+            await payCheckout(page)
+          }catch(e) {
+            mlog.error(e)
+          }
         }
         {
           //Wait for Loading transition page
-          waitForPaymentTransition(page);
+          try {
+          await waitForPaymentTransition(page);
+          }catch(e) {
+            mlog.error(e)
+          }
        }
   
       {

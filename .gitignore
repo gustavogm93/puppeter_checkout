@@ -47,5 +47,5 @@ npm-error.log*
 #File Develops
 develop-data.json
 
-
-/completed-tests
+#Ignore test results
+/completed_tests
