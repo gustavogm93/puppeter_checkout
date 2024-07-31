@@ -4,10 +4,10 @@ const HEADER_COLOR = `\x1b[7m` ;
   const RESET = '\x1b[0m';
 
 const CONST_COLOR = `\x1b[34m` ; 
-const RESPONSE_COLOR = `\x1b[38;5;132m` ; 
-const LOW_IMPORTANCE_RESPONSE_COLOR = '\x1b[38;5;144m'
+const RESPONSE_COLOR = `\x1b[38;5;130m` ; 
+const LOW_IMPORTANCE_RESPONSE_COLOR = '\x1b[38;5;237m'
 const addColorToText = (text, color) => {
-  return `${color}${text}${RESET}`;
+  return `${text}`;
 }
 
 
@@ -77,4 +77,4 @@ response:
 }
 
 
-  module.exports = { formatRequestLogs }
+  module.exports = { formatRequestLogs, formatRequestLogs2 }

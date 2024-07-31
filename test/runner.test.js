@@ -3,12 +3,13 @@ const {fillEmail} = require('./actions/fillEmail.js');
 const {fillPhone} = require('./actions/fillPhone.js');
 const {fillCard} = require('./actions/fillCard.js');
 const {checkElementsInLoadingTransition} = require('./actions/checkElementsInLoadingTransition.js');
-const {  createDirectory, prependToFile} = require('../utils/fs_utils.js')
+const {  writeFile, createDirectory, prependToFile} = require('../utils/fs_utils.js')
 const {generateSheet} = require('../excel.js');
 const mlog = require('mocha-logger');
 const path = require('path');
 const { Cluster } = require('puppeteer-cluster');
 const { takeScreenshotAndSave } = require('./image/takeScreenshot.js')
+const { formatRequestLogs2 } = require('../utils/formatRequestLogs.js');
 
 const { getCard, generateRandomEmail, getPaymentRequestId, generateTestCaseId, generateTestRunId } = require('../data_sample.js');
 /* const {expect} = require("chai");
@@ -86,19 +87,20 @@ describe("One Click",()=>{
     
     targetPage.on('response', async (response) => {
       const request = response.request();
-      if(request?.url() && request?.url().startsWith("https://dev-pago.payclip.com/api/")) {
-        const statusCode = await response.status();
-        const response = await response.json();
-        
+      if(request?.url() && request?.url()?.startsWith("https://dev-pago.payclip.com/api/")) {
+        mlog.error("llego aca");
+        const statusCode = await response?.status();
+        const responseJson = await response?.json();
+        mlog.error("llego aca2");
         const request_log = {
           url: request.url(),
           headers: JSON.stringify(request.headers()),
           payload: request.postData(),
-          statusCode,
-          response,
+          statusCode: statusCode,
+          response: responseJson,
           timestamp: new Date().toISOString(),
         };
-        request_log_list.push(request_log);
+        request_log_list.push(request_log)
         
       }
     });
@@ -150,31 +152,32 @@ describe("One Click",()=>{
 
   
   
-      }
+      }   
+
             //Click in Pay
-   
-            await puppeteer.Locator.race([
-                targetPage.locator('::-p-aria(clip)'),
-                targetPage.locator("[data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img"),
-                targetPage.locator('::-p-xpath(//*[@data-testid=\\"paymentButton-ctaPrincipal\\"]/span[1]/img)'),
-                targetPage.locator(":scope >>> [data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img")
-            ])
-                .setTimeout(timeout)
-                .click({
-                  offset: {
-                    x: 11.1875,
-                    y: 5,
-                  },
-                });
+
+            // await puppeteer.Locator.race([
+            //     targetPage.locator('::-p-aria(clip)'),
+            //     targetPage.locator("[data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img"),
+            //     targetPage.locator('::-p-xpath(//*[@data-testid=\\"paymentButton-ctaPrincipal\\"]/span[1]/img)'),
+            //     targetPage.locator(":scope >>> [data-testid='paymentButton-ctaPrincipal'] > span:nth-of-type(1) > img")
+            // ])
+            //     .setTimeout(timeout)
+            //     .click({
+            //       offset: {
+            //         x: 11.1875,
+            //         y: 5,
+            //       },
+            //     });
         }
         {
           //Wait for Loading transition page
 
             try {
                  const selector = '[data-testid="SuccesPayment-decimal"]';
-                 await page.waitForSelector(selector, { timeout: 999999 }); // 18 seconds timeout
+                 await page.waitForSelector(selector, { timeout: 999999 }); 
           } catch (e) {
-            await page.waitForSelector(selector, { timeout: 999999 }); // 18 seconds timeout
+            await page.waitForSelector(selector, { timeout: 999999 });
              console.error(e, "--------------------------------");
              await browser.close();
          }     
@@ -197,7 +200,10 @@ describe("One Click",()=>{
       if(results_run.length > 3) {
       generateSheet(results_run, `/completed_tests/test_runs/${test_run_id}/${test_run_id}`);
       }
-      await prependToFile(JSON.stringify(request_log_list));
+      const path_logs =  path.join(baseDir, `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/logs.txt`);
+    
+      writeFile(path_logs, formatRequestLogs2(request_log_list));
+
       await browser.close();
     }
     });
@@ -205,7 +211,7 @@ describe("One Click",()=>{
     const parameters = [];
 const baseDir = process.cwd();
 createDirectory("completed_tests/test_runs", test_run_id);
-for (let i = 0; i <= 1; i++) {
+for (let i = 0; i < 2; i++) {
 // const prs = ["bdb2522e-8955-4c41-8b6a-bef29f9b55da",
 // "9131e884-faf2-4416-ad26-4e29a8a8a0fd",
 // "1ff71e00-dc73-4dd6-a01c-f63887a95542",
