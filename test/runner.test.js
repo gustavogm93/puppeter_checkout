@@ -7,7 +7,7 @@ const {
   fillCard,
   payCheckout,
   waitForPaymentTransition,
-  clickSaveMyInfo
+  clickSaveMyInfo,
 } = require("./actions/module/actions-module");
 const { writeFile, createDirectory } = require("../utils/fs_utils");
 const { generateSheet, readSheet } = require("../excel");
@@ -19,17 +19,18 @@ const {
   generateTestRunId,
 } = require("../data_sample");
 const { logHeader } = require("../utils/logger");
-const { convertExcelDataToObject } = require("../utils/convertExcelDataToObject");
+const {
+  convertExcelDataToObject,
+} = require("../utils/convertExcelDataToObject");
 
 /* const {expect} = require("chai");
  */
 const PAYMENT_FLOW_TYPES = {
-  REGISTER: 'REGISTER',
-  GUEST: 'GUEST',
-}
-const PARAMETERS_SHEET_NAME = "parameters.xlsx"
-const TIMEOUT_WAIT_LOGS = 30000
-
+  REGISTER: "REGISTER",
+  GUEST: "GUEST",
+};
+const PARAMETERS_SHEET_NAME = "parameters.xlsx";
+const TIMEOUT_WAIT_LOGS = 30000;
 
 describe("One Click", () => {
   it("Pay Register buyer checkout", async () => {
@@ -62,11 +63,8 @@ describe("One Click", () => {
 
       logHeader(data, "PARAMETERS");
       logHeader({}, "GENERATING DIRECTORY...");
-      
-        createDirectory(
-          `completed_tests/test_runs/${test_run_id}`,
-          test_case_id
-        );
+
+      createDirectory(`completed_tests/test_runs/${test_run_id}`, test_case_id);
 
       await page.setViewport({ width: 1280, height: 1080 });
       await page.setRequestInterception(true);
@@ -76,7 +74,7 @@ describe("One Click", () => {
       const targetPage = page;
 
       targetPage.on("request", (request) => {
-       if (request.resourceType() === 'image') request.abort()
+        if (request.resourceType() === "image") request.abort();
 
         if (
           request?.url() &&
@@ -144,41 +142,35 @@ describe("One Click", () => {
         await fillCard(targetPage, card);
       }
       {
-        mlog.log("Interactions", payment_flow_type)
-        if(payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
-        await clickSaveMyInfo(targetPage)
+        if (payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
+          await clickSaveMyInfo(targetPage);
         }
       }
       {
-     
-          logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
-          //Save Checkout Form in screenshot
-          const pathImageForFormPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
-          await takeScreenshotAndSave(
-            pathImageForFormPage,
-            targetPage,
-            baseDir
-          );
+        logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
+        //Save Checkout Form in screenshot
+        const pathImageForFormPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
+        await takeScreenshotAndSave(pathImageForFormPage, targetPage, baseDir);
       }
-      // {
-      //   //Click in Pay
-        
-      //   try {
-      //     await payCheckout(page);
-      //  } catch (e) {
-      //    status = "failed"
-      //    mlog.error(e);
-      //  }
-      // }
-      // {
-      //   //Wait for Loading transition page
-      //   try {
-      //      await waitForPaymentTransition(page);
-      //   } catch (e) {
-      //     status = "failed"
-      //     mlog.error(e);
-      //   }
-      // }
+      {
+        //Click in Pay
+
+        try {
+          await payCheckout(page);
+        } catch (e) {
+          status = "failed";
+          mlog.error(e);
+        }
+      }
+      {
+        //Wait for Loading transition page
+        try {
+          await waitForPaymentTransition(page);
+        } catch (e) {
+          status = "failed";
+          mlog.error(e);
+        }
+      }
 
       {
         logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
@@ -191,7 +183,7 @@ describe("One Click", () => {
             targetPage,
             baseDir
           );
-          
+
           const result_test_case = [
             test_case_id,
             card,
@@ -212,9 +204,15 @@ describe("One Click", () => {
             baseDir +
             `/completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/logs.txt`;
 
-            logHeader({}, `Write Logs results: ${test_case_id}`);
-            setTimeout(async () => await writeFile(path_logs_save, formatRequestLogs(request_log_list), TIMEOUT_WAIT_LOGS))
-          
+          logHeader({}, `Write Logs results: ${test_case_id}`);
+          setTimeout(
+            async () =>
+              await writeFile(
+                path_logs_save,
+                formatRequestLogs(request_log_list),
+                TIMEOUT_WAIT_LOGS
+              )
+          );
         } catch (e) {
           mlog.error(e, "--------------------------------");
         }
@@ -226,22 +224,22 @@ describe("One Click", () => {
     //Create Run directory
     createDirectory("completed_tests/test_runs", test_run_id);
 
-    const buffer = readSheet(PARAMETERS_SHEET_NAME)
+    const buffer = readSheet(PARAMETERS_SHEET_NAME);
 
     //These are the parameters from excel.
-    const parametersFromSheet = convertExcelDataToObject(buffer)
+    const parametersFromSheet = convertExcelDataToObject(buffer);
 
-    if(!parametersFromSheet || parametersFromSheet.length === 0) {
-      mlog.error("No parameters found in the excel sheet.")
+    if (!parametersFromSheet || parametersFromSheet.length === 0) {
+      mlog.error("No parameters found in the excel sheet.");
       return;
     }
-    
+
     //Get number of test cases by iterations.
     const ITERATIONS = parametersFromSheet.length;
 
     for (let i = 0; i < ITERATIONS; i++) {
       const data = parametersFromSheet[i];
-      const {cardNumber, prId, prType, paymentFlow} = data
+      const { cardNumber, prId, prType, paymentFlow } = data;
 
       const value = {
         test_case_id: generateTestCaseId(i),
@@ -257,14 +255,13 @@ describe("One Click", () => {
       };
       parameters.push(value);
     }
-  
+
     parameters.map((p) => {
       cluster.execute(p);
     });
-    
+
     await cluster.idle();
     await cluster.close();
-
 
     logHeader({}, `Write Excel results: ${test_run_id}`);
     generateSheet(
