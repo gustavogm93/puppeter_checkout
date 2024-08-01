@@ -30,7 +30,7 @@ const PAYMENT_FLOW_TYPES = {
   GUEST: "GUEST",
 };
 const PARAMETERS_SHEET_NAME = "parameters.xlsx";
-const TIMEOUT_WAIT_LOGS = 30000;
+const TIMEOUT_WAIT_LOGS = 1000;
 
 describe("One Click", () => {
   it("Pay Register buyer checkout", async () => {
@@ -78,7 +78,8 @@ describe("One Click", () => {
 
         if (
           request?.url() &&
-          request?.url().startsWith("https://dev-pago.payclip.com/api/")
+          (request?.url().startsWith("https://dev-pago.payclip.com/api/") ||
+          request?.url().startsWith("https://dev-api-secure.payclip.com/"))
         ) {
         }
         request.continue();
@@ -88,7 +89,8 @@ describe("One Click", () => {
         const request = response.request();
         if (
           request?.url() &&
-          request?.url()?.startsWith("https://dev-pago.payclip.com/api/")
+          (request?.url()?.startsWith("https://dev-pago.payclip.com/api/") ||
+          request?.url().startsWith("https://dev-api-secure.payclip.com/"))
         ) {
           const statusCode = await response?.status();
           const responseJson = await response?.json();
