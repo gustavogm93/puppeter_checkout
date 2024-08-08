@@ -31,7 +31,7 @@ const card_brands = [
 
 function generateTestRunId() {
     const currentDateInMs = Date.now();
-    return `${currentDateInMs}`;
+    return `${currentDateInMs}_doble_Test`;
 }
 function generateTestCaseId(i) {
     const currentDateInMs = Date.now();

@@ -7,10 +7,11 @@ function convertExcelDataToObject(data) {
     //Must have every column filled in excel
     if (data[i][0] && data[i][1] && data[i][2] && data[i][3])
       parametersList.push({
-        cardNumber: data[i][0],
-        prId: data[i][1],
-        prType: data[i][2],
-        paymentFlow: data[i][3],
+        testCaseName: data[i][0],
+        cardNumber: data[i][1],
+        prId: data[i][2],
+        prType: data[i][3],
+        paymentFlow: data[i][4],
       });
   }
   return parametersList;
