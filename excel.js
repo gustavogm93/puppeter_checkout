@@ -37,6 +37,5 @@ function generateSheet(data, _path) {
   });
 }
 
-readSheet("parameters.xlsx");
 
 module.exports = { generateSheet, readSheet };

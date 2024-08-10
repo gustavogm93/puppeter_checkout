@@ -4,6 +4,7 @@
   },
   "dependencies": {
     "chai": "^5.1.1",
+    "dotenv": "^16.4.5",
     "mocha": "^10.7.0",
     "mocha-logger": "^1.0.8",
     "node-fetch": "^2.6.6",

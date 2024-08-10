@@ -1,18 +1,37 @@
-await cluster.task(async ( data, results_run ) => {
-    const {
-      test_case_id,
-      card,
-      email,
-      phone,
-      payment_request_id,
-      payment_flow_type,
-      payment_request_type,
-      request_log_list,
-      iterations,
-      i,
-    } = data;
-    let status = "OK";
+const mlog = require("mocha-logger");
+const {
+  fillEmail,
+  fillPhone,
+  fillCard,
+  payCheckout,
+  waitForPaymentTransition,
+  clickSaveMyInfo,
+} = require("../actions/module/actions-module");
+const { writeFile, createDirectory } = require("../../utils/fs_utils");
+const { getFormattedDateTime } = require("../../utils/date_utils");
+const { takeScreenshotAndSave } = require("../image/takeScreenshot");
+const { formatRequestLogs } = require("../../utils/formatRequestLogs");
+const { PAYMENT_FLOW_TYPES } = require("../enums/paymentFlowTypes");
+const { logHeader } = require("../../utils/logger");
+require("dotenv").config();
 
+async function taskCheckoutPay(page, data, test_run_id, results_run) {
+  const URL = process.env.URL_BASE;
+  const DEFAULT_PAGE_TIMEOUT = 15000;
+  const TIMEOUT_WAIT_LOGS = 1000;
+  const BASE_DIR = process.cwd();
+  const {
+    test_case_id,
+    card,
+    email,
+    phone,
+    payment_request_id,
+    payment_flow_type,
+    payment_request_type,
+    request_log_list,
+  } = data;
+  let status = "OK";
+  try {
     logHeader(data, "PARAMETERS");
     logHeader({}, "GENERATING DIRECTORY...");
 
@@ -21,7 +40,7 @@ await cluster.task(async ( data, results_run ) => {
     await page.setViewport({ width: 1280, height: 1080 });
     await page.setRequestInterception(true);
 
-    page.setDefaultTimeout(timeout);
+    page.setDefaultTimeout(DEFAULT_PAGE_TIMEOUT);
 
     const targetPage = page;
 
@@ -31,7 +50,7 @@ await cluster.task(async ( data, results_run ) => {
       if (
         request?.url() &&
         (request?.url().startsWith("https://dev-pago.payclip.com/api/") ||
-        request?.url().startsWith("https://dev-api-secure.payclip.com/"))
+          request?.url().startsWith("https://dev-api-secure.payclip.com/"))
       ) {
       }
       request.continue();
@@ -42,7 +61,7 @@ await cluster.task(async ( data, results_run ) => {
       if (
         request?.url() &&
         (request?.url()?.startsWith("https://dev-pago.payclip.com/api/") ||
-        request?.url().startsWith("https://dev-api-secure.payclip.com/"))
+          request?.url().startsWith("https://dev-api-secure.payclip.com/"))
       ) {
         const statusCode = await response?.status();
         const responseJson = await response?.json();
@@ -63,13 +82,11 @@ await cluster.task(async ( data, results_run ) => {
     };
     const promises = [];
     startWaitingForEvents();
-    await targetPage.goto(
-      `https://dev-pago.payclip.com/${payment_request_id}`
-    );
+    mlog.error(`${URL}/${payment_request_id}`, "URL----");
+    await targetPage.goto(`${URL}/${payment_request_id}`);
     await Promise.all(promises);
 
     //get amount:
-
     let displayed_amount = await targetPage.$eval(
       "#__next > div.FormPayment_wrapFormPaymentDesktop__bnw2T > div.FormPayment_wrapOrderSummaryColum__ZGvRp > div.OrderSummary_wrapOrderSummary__gt6O5.OrderSummary_desktopStyles__j_lTJ > section.Breakdown_breakdownSection__CVqET.Breakdown_grayLight__hNAYk > section > div.Breakdown_totalRow__ED57c > span.text_span__Q4eOL.text_left__ZQekq.text_semibold__nVajh.text_xxs__x8CSG.text_surface950__Ebmcu > span",
       (el) => el.textContent
@@ -104,7 +121,7 @@ await cluster.task(async ( data, results_run ) => {
       logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
       //Save Checkout Form in screenshot
       const pathImageForFormPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
-      await takeScreenshotAndSave(pathImageForFormPage, targetPage, baseDir);
+      await takeScreenshotAndSave(pathImageForFormPage, targetPage, BASE_DIR);
     }
     {
       //Click in Pay
@@ -113,7 +130,7 @@ await cluster.task(async ( data, results_run ) => {
         await payCheckout(page);
       } catch (e) {
         status = "failed";
-        mlog.error(e);
+        mlog.error(e, "Error in pay Checkout");
       }
     }
     {
@@ -122,53 +139,54 @@ await cluster.task(async ( data, results_run ) => {
         await waitForPaymentTransition(page);
       } catch (e) {
         status = "failed";
-        mlog.error(e);
+        mlog.error(e, "Error waiting for payment transition");
       }
     }
 
     {
       logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
-      try {
-        //Save Success Page in screenshot
 
-        const pathImageForSuccessPayPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`;
-        await takeScreenshotAndSave(
-          pathImageForSuccessPayPage,
-          targetPage,
-          baseDir
-        );
+      //Save Success Page in screenshot
+      const pathImageForSuccessPayPage = `completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`;
+      await takeScreenshotAndSave(
+        pathImageForSuccessPayPage,
+        targetPage,
+        BASE_DIR
+      );
 
-        const result_test_case = [
-          test_case_id,
-          card,
-          email,
-          phone,
-          payment_request_id,
-          payment_flow_type,
-          displayed_amount,
-          payment_request_type,
-          getFormattedDateTime(),
-          status,
-        ];
+      const result_test_case = [
+        test_case_id,
+        card,
+        email,
+        phone,
+        payment_request_id,
+        payment_flow_type,
+        displayed_amount,
+        payment_request_type,
+        getFormattedDateTime(),
+        status,
+      ];
 
-        results_run.push(result_test_case);
+      results_run.push(result_test_case);
 
-        logHeader({}, `Save logs: ${test_case_id}`);
-        const path_logs_save =
-          baseDir +
-          `/completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/logs.txt`;
+      logHeader({}, `Save logs: ${test_case_id}`);
+      const path_logs_save =
+        BASE_DIR +
+        `/completed_tests/test_runs/${test_run_id}/${test_case_id.toString()}/logs.txt`;
 
-        logHeader({}, `Write Logs results: ${test_case_id}`);
-        setTimeout(
-          async () =>
-            await writeFile(
-              path_logs_save,
-              formatRequestLogs(request_log_list),
-              TIMEOUT_WAIT_LOGS
-            )
-        );
-      } catch (e) {
-        mlog.error(e, "--------------------------------");
-      }
+      logHeader({}, `Write Logs results: ${test_case_id}`);
+      setTimeout(
+        async () =>
+          await writeFile(
+            path_logs_save,
+            formatRequestLogs(request_log_list),
+            TIMEOUT_WAIT_LOGS
+          )
+      );
     }
-  });
+  } catch (e) {
+    mlog.error(e);
+  }
+}
+
+module.exports = { taskCheckoutPay };
