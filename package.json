@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "test": "mocha  --timeout 60000"
+    "test": "mocha  --timeout 60000",
+    "test:dev": "cross-env ENV=dev npm run test",
+    "test:stage": "cross-env ENV=stage npm run test"
   },
   "dependencies": {
     "chai": "^5.1.1",
@@ -15,5 +17,8 @@
     "request-promise-native": "^1.0.9",
     "selenium-webdriver": "^4.23.0",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

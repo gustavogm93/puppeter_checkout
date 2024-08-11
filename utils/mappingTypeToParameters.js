@@ -1,20 +1,34 @@
 const { PAYMENT_REQUEST_TYPES } = require("../test/enums/paymentFlowTypes");
 const { generateRandomEmail } = require("../data_sample");
-
+const { formatCardNumber } = require("../utils/format_utils");
 function mappingTypeWithParameters(data) {
   const mapParameters = new Map();
+
   for (let i = 1; i < data.length; i++) {
     //Must have every column filled in excel
     let containAllColumns;
     try {
       containAllColumns =
         data[i][0] && data[i][1] && data[i][2] && data[i][3] && data[i][4];
+
+      if (!containAllColumns) {
+        console.error(
+          "Must contain all columns filled in excel",
+          data[i][0],
+          data[i][1],
+          data[i][2],
+          data[i][3],
+          data[i][4]
+        );
+        continue;
+      }
+
       const prType = data[i][3];
 
       const parametersArray = mapParameters.get(prType) || [];
       const parameters = {
         testCaseName: data[i][0],
-        cardNumber: data[i][1],
+        cardNumber: formatCardNumber(data[i][1]),
         prId: data[i][2],
         prType: data[i][3],
         paymentFlow: data[i][4],

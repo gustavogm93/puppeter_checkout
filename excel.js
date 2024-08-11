@@ -5,11 +5,17 @@ const path = require("path");
 const BASE_CSV_FILE = "base.xlsx";
 
 function readSheet(fileName) {
+  const REQUIRED_CSV_COLUMNS = 4;
   const workSheetsFromBuffer = xlsx.parse(
     fs.readFileSync(`${__dirname}/${fileName}`)
   );
 
-  return workSheetsFromBuffer[0].data;
+  //remove empty rows;
+  const values = workSheetsFromBuffer[0].data.filter(
+    (data) => data.length >= REQUIRED_CSV_COLUMNS
+  );
+
+  return values;
 }
 
 function generateSheet(data, _path) {
@@ -20,7 +26,7 @@ function generateSheet(data, _path) {
 
   const filePath = path.join(__dirname, `${_path}_results.xlsx`);
 
-  const range = { s: { c: 0, r: 0 }, e: { c: 0, r: 3 } };
+  const range = { s: { c: 0, r: 0 }, e: { c: 0, r: 0 } };
   const sheetOptions = { "!merges": [range] };
 
   const common = workSheetsFromBuffer[0].data;
@@ -36,6 +42,5 @@ function generateSheet(data, _path) {
     console.log(`Buffer saved to ${filePath}`);
   });
 }
-
 
 module.exports = { generateSheet, readSheet };

@@ -80,7 +80,7 @@ const generateBodyCheckoutV2 = (data) => {
       },
       custom_payment_options: {
         tip_enabled: true,
-        payment_method_types: ["cash"],
+        payment_method_types: ["cash", "credit", "debit"],
       },
     });
     return raw;
