@@ -7,15 +7,15 @@ const {
   waitForPaymentTransition,
   clickSaveMyInfo,
 } = require("../actions/module/actions-module");
-const { writeFile, createDirectory } = require("../../utils/fs_utils");
-const { getFormattedDateTime } = require("../../utils/date_utils");
+const { writeFile, createDirectory } = require("../lib/fs_utils");
+const { getFormattedDateTime } = require("../lib/date_utils");
 const { takeScreenshotAndSave } = require("../image/takeScreenshot");
-const { formatRequestLogs } = require("../../utils/formatRequestLogs");
+const { formatRequestLogs } = require("../lib/formatRequestLogs");
 const {
   PAYMENT_FLOW_TYPES,
   PAYMENT_REQUEST_TYPES,
 } = require("../enums/paymentFlowTypes");
-const { logHeader } = require("../../utils/logger");
+const { logHeader } = require("../lib/logger");
 require("dotenv").config();
 
 const PAGE_URL = {

@@ -1,23 +1,23 @@
 const { Cluster } = require("puppeteer-cluster");
 const mlog = require("mocha-logger");
 
-const { taskCheckoutPay } = require("./runner/clusterTask");
-const { createDirectory } = require("../utils/fs_utils");
-const { generateSheet, readSheet } = require("../excel");
+const { taskCheckoutPay } = require("../src/runner/clusterTask");
+const { createDirectory } = require("../src/lib/fs_utils");
+const { generateSheet, readSheet } = require("../src/lib/excel_utils");
 
-const { generateRandomEmail, generateTestRunId } = require("../data_sample");
-const { logHeader } = require("../utils/logger");
-const {} = require("../utils/convertExcelDataToObject");
+const { generateTestRunId } = require("../src/lib/parameterUtils");
+const { logHeader } = require("../src/lib/logger");
+const {} = require("../src/lib/convertExcelDataToObject");
 const {
   mappingTypeWithParameters,
-} = require("../utils/mappingTypeToParameters");
-const { PAYMENT_REQUEST_TYPES } = require("./enums/paymentFlowTypes");
+} = require("../src/lib/mappingTypeToParameters");
+const { PAYMENT_REQUEST_TYPES } = require("../src/enums/paymentFlowTypes");
 const {
   executeMultipleCreateCheckoutsV2,
-} = require("../service/createCheckoutV2.service");
-const { filterParameters } = require("./runner/filterParameters");
+} = require("../src/service/createCheckoutV2.service");
+const { filterParameters } = require("../src/runner/filterParameters");
 require("dotenv").config();
-const { validateParameters } = require("../validations/validateParameters");
+const { validateParameters } = require("../src/validations/validateParameters");
 
 const env = (process.env.ENV || "dev").toLocaleLowerCase(); //Change environment::
 const PARAMETERS_SHEET_NAME = `parameters_${env}.xlsx`;
