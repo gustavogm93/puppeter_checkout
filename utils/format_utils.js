@@ -1,12 +1,19 @@
 //formatting 5215956400364553 => 5215 9564 0036 4553
 function formatCardNumber(cardNumber) {
-  //remove spaces between numbers
-  const normalizedToFirstFormat = JSON.stringify(cardNumber).replace(
-    /\s+/g,
-    ""
-  );
+  let finalFormat;
+  if (isNumber(cardNumber)) {
+    const cardNumberString = JSON.stringify(cardNumber);
 
-  const finalFormat = normalizedToFirstFormat.replace(/(.{4})/g, "$1 ").trim();
+    finalFormat = cardNumberString.replace(/(.{4})/g, "$1 ").trim();
+  } else {
+    const normalizedToFirstFormat = cardNumber.split(" ").join("");
+
+    const normalizeToNumber = JSON.stringify(Number(normalizedToFirstFormat));
+
+    finalFormat = normalizeToNumber.replace(/(.{4})/g, "$1 ").trim();
+  }
+
+  console.log(finalFormat, "--------------------------------");
   assertCardFormat(finalFormat);
   return finalFormat;
 }
@@ -20,6 +27,10 @@ function assertCardFormat(cardString) {
     regex.test(cardString),
     `Assertion failed: "${cardString}" is not in the format xxxx xxxx xxxx xxxx`
   );
+}
+
+function isNumber(value) {
+  return typeof value === "number" && !isNaN(value);
 }
 
 module.exports = { formatCardNumber };

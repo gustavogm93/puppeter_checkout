@@ -24,9 +24,10 @@ describe("One Click", () => {
   let PARAMETERS_MAP;
   let cluster;
 
-  before(() => {
+  before(async () => {
     const buffer = readSheet(PARAMETERS_SHEET_NAME);
     PARAMETERS_MAP = mappingTypeWithParameters(buffer);
+
     //TODO:Add validation of parameter combination.
   });
 
@@ -90,6 +91,7 @@ describe("One Click", () => {
         };
         parameters.push(value);
       }
+      //probar for each
       parameters.map(async (p) => {
         await cluster.execute(p);
       });
