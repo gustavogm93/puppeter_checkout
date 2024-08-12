@@ -13,7 +13,6 @@ function formatCardNumber(cardNumber) {
     finalFormat = normalizeToNumber.replace(/(.{4})/g, "$1 ").trim();
   }
 
-  console.log(finalFormat, "--------------------------------");
   assertCardFormat(finalFormat);
   return finalFormat;
 }

@@ -53,9 +53,7 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       test_case_id
     );
 
-    await page.setViewport({ width: 1280, height: 1080 });
     await page.setRequestInterception(true);
-
     page.setDefaultTimeout(DEFAULT_PAGE_TIMEOUT);
 
     const targetPage = page;
@@ -63,12 +61,12 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     targetPage.on("request", (request) => {
       if (request.resourceType() === "image") request.abort();
 
-      if (
-        request?.url() &&
-        (request?.url().startsWith(PAGE_URL[env]) ||
-          request?.url().startsWith(SECURE_API[env]))
-      ) {
-      }
+      // if (
+      //   request?.url() &&
+      //   (request?.url().startsWith(PAGE_URL[env]) ||
+      //     request?.url().startsWith(SECURE_API[env]))
+      // ) {
+      // }
       request.continue();
     });
 

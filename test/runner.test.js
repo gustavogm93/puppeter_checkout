@@ -91,8 +91,8 @@ describe("One Click", () => {
         };
         parameters.push(value);
       }
-      //probar for each
-      parameters.map(async (p) => {
+
+      parameters.forEach(async (p) => {
         await cluster.execute(p);
       });
     } catch (err) {
