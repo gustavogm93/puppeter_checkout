@@ -15,10 +15,13 @@ const { PAYMENT_REQUEST_TYPES } = require("./enums/paymentFlowTypes");
 const {
   executeMultipleCreateCheckoutsV2,
 } = require("../service/createCheckoutV2.service");
+const { filterParameters } = require("./runner/filterParameters");
 require("dotenv").config();
+const { validateParameters } = require("../validations/validateParameters");
 
 const env = (process.env.ENV || "dev").toLocaleLowerCase(); //Change environment::
 const PARAMETERS_SHEET_NAME = `parameters_${env}.xlsx`;
+const FILTER_OPTIONS = [{ key: "JUST", value: process.env.JUST }];
 
 describe("One Click", () => {
   let PARAMETERS_MAP;
@@ -27,8 +30,7 @@ describe("One Click", () => {
   before(async () => {
     const buffer = readSheet(PARAMETERS_SHEET_NAME);
     PARAMETERS_MAP = mappingTypeWithParameters(buffer);
-
-    //TODO:Add validation of parameter combination.
+    validateParameters(PARAMETERS_MAP);
   });
 
   beforeEach(async () => {
@@ -42,14 +44,11 @@ describe("One Click", () => {
     const results_run = [];
     let test_run_id;
     try {
-      const parametersFromSheet = PARAMETERS_MAP.get(
-        PAYMENT_REQUEST_TYPES.LINK_DE_PAGO
+      //Get by Type and filter by filter options
+      const parametersFromSheet = filterParameters(
+        PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO),
+        FILTER_OPTIONS
       );
-
-      if (!parametersFromSheet || parametersFromSheet.length === 0) {
-        mlog.error("No parameters found in sheet: " + PARAMETERS_SHEET_NAME);
-        return;
-      }
 
       test_run_id = generateTestRunId(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO);
 
