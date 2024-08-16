@@ -17,7 +17,7 @@ const {
 } = require("../enums/paymentFlowTypes");
 const { logHeader } = require("../lib/logger");
 require("dotenv").config();
-
+const DEV = "DEV";
 const PAGE_URL = {
   DEV: "https://dev-pago.payclip.com",
   STAGE: "https://stage-pago.payclip.com",
@@ -27,7 +27,7 @@ const SECURE_API = {
   STAGE: "https://stage-api-secure.payclip.com/",
 };
 
-const env = (process.env.ENV || "DEV").toUpperCase(); // environment;
+const env = (process.env.ENV || DEV).toUpperCase(); // environment;
 
 async function taskCheckoutPay(page, data, test_run_id, results_run) {
   const DEFAULT_PAGE_TIMEOUT = 15000;
@@ -53,6 +53,7 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       test_case_id
     );
 
+    await page.setViewport({ width: 1280, height: 1080 });
     await page.setRequestInterception(true);
     page.setDefaultTimeout(DEFAULT_PAGE_TIMEOUT);
 
@@ -60,13 +61,6 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
 
     targetPage.on("request", (request) => {
       if (request.resourceType() === "image") request.abort();
-
-      // if (
-      //   request?.url() &&
-      //   (request?.url().startsWith(PAGE_URL[env]) ||
-      //     request?.url().startsWith(SECURE_API[env]))
-      // ) {
-      // }
       request.continue();
     });
 
@@ -96,73 +90,101 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     };
     const promises = [];
     startWaitingForEvents();
+
     await targetPage.goto(`${PAGE_URL[env]}/${payment_request_id}`);
     await Promise.all(promises);
 
-    //get amount of payment request displayed firstly without dcc and installments:
-    let displayed_amount = await targetPage.$eval(
-      "#__next > div.FormPayment_wrapFormPaymentDesktop__bnw2T > div.FormPayment_wrapOrderSummaryColum__ZGvRp > div.OrderSummary_wrapOrderSummary__gt6O5.OrderSummary_desktopStyles__j_lTJ > section.Breakdown_breakdownSection__CVqET.Breakdown_grayLight__hNAYk > section > div.Breakdown_totalRow__ED57c > span.text_span__Q4eOL.text_left__ZQekq.text_semibold__nVajh.text_xxs__x8CSG.text_surface950__Ebmcu > span",
-      (el) => el.textContent
-    );
-
-    //INTERACTIONS:::
-    {
+    try {
       await targetPage.keyboard.down("Meta");
-    }
-    {
-      await targetPage.keyboard.up("Meta");
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error pressing down Meta key");
     }
 
-    {
+    try {
+      await targetPage.keyboard.up("Meta");
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error releasing Meta key");
+    }
+
+    try {
       if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
         logHeader({}, `Filling Email: ${test_case_id}`);
         await fillEmail(targetPage, email);
       }
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error filling email");
     }
-    {
+
+    try {
       if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
         logHeader({}, `Filling Phone ${test_case_id}`);
         await fillPhone(targetPage, phone);
       }
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error filling phone");
     }
-    {
+
+    try {
       logHeader({}, `Filling Card: ${test_case_id}`);
       await fillCard(targetPage, card);
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error filling card");
     }
-    {
+
+    try {
       if (payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
         await clickSaveMyInfo(targetPage);
       }
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error clicking save my info");
     }
-    {
+
+    let displayed_amount;
+    try {
+      // Get amount of payment request displayed firstly without DCC and installments
+      displayed_amount = await targetPage.$eval(
+        "#__next > div.FormPayment_wrapFormPaymentDesktop__bnw2T > div.FormPayment_wrapOrderSummaryColum__ZGvRp > div.OrderSummary_wrapOrderSummary__gt6O5.OrderSummary_desktopStyles__j_lTJ > div > section.Breakdown_breakdownSection__CVqET.Breakdown_grayLight__hNAYk > section > div.Breakdown_totalRow__ED57c > span.text_span__Q4eOL.text_left__ZQekq.text_semibold__nVajh.text_xxs__x8CSG.text_surface950__Ebmcu > span",
+        (el) => el.textContent
+      );
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error getting displayed amount");
+    }
+
+    try {
       logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
-      //Save Checkout Form in screenshot
+      // Save Checkout Form in screenshot
       const pathImageForFormPage = `completed_tests/test_runs/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
       await takeScreenshotAndSave(pathImageForFormPage, targetPage, BASE_DIR);
-    }
-    {
-      //Click in Pay
-
-      try {
-        await payCheckout(page);
-      } catch (e) {
-        status = "failed";
-        mlog.error(e, "Error in pay Checkout");
-      }
-    }
-    {
-      //Wait for Loading transition page
-      try {
-        await waitForPaymentTransition(page);
-      } catch (e) {
-        status = "failed";
-        mlog.error(e, "Error waiting for payment transition");
-      }
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error saving screenshot for form page fill");
     }
 
-    {
+    try {
+      // Click in Pay
+      await payCheckout(page);
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error in pay Checkout");
+    }
+
+    try {
+      // Wait for Loading transition page
+      await waitForPaymentTransition(page);
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error waiting for payment transition");
+    }
+
+    try {
       logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
-
       const pathImageForSuccessPayPage = `completed_tests/test_runs/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`;
       await takeScreenshotAndSave(
         pathImageForSuccessPayPage,
@@ -199,9 +221,12 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
             TIMEOUT_WAIT_LOGS
           )
       );
+    } catch (e) {
+      status = "failed";
+      mlog.error(e, "Error during final steps");
     }
   } catch (e) {
-    mlog.error(e);
+    mlog.error(e, "Error in taskCheckoutPay");
   }
 }
 

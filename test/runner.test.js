@@ -45,13 +45,16 @@ describe("One Click", () => {
     let test_run_id;
     try {
       //Get by Type and filter by filter options
+      console.log(FILTER_OPTIONS, "Filter");
       const parametersFromSheet = filterParameters(
         PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO),
         FILTER_OPTIONS
       );
 
-      test_run_id = generateTestRunId(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO);
+      if (!parametersFromSheet || parametersFromSheet.length === 0)
+        throw new Error("No parameters found for this type");
 
+      test_run_id = generateTestRunId(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO);
       await cluster.task(async ({ page, data }) => {
         await taskCheckoutPay(page, data, test_run_id, results_run);
       });
