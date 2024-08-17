@@ -6,7 +6,7 @@ const ERROR_MESSAGES = {
   FILL_CARD: "Error filling card",
   CLICK_SAVE_MY_INFO: "Error clicking save my info",
   GET_DISPLAYED_AMOUNT: "Error getting displayed amount",
-  SAVE_SCREENSHOT_FORM_PAGE: "Error saving screenshot for form page fill",
+  SAVE_SCREENSHOT: "Error saving screenshot",
   PAY_CHECKOUT: "Error in pay Checkout",
   WAIT_PAYMENT_TRANSITION: "Error waiting for payment transition",
   FINAL_STEPS: "Error during final steps",

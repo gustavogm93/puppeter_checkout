@@ -7,10 +7,9 @@ async function takeScreenshotAndSave(pathImage, targetPage, baseDir) {
       path: pathImage,
       fullPage: true,
     });
-    const filePath = path.join(baseDir, pathImage.indexOf(1));
-
-    writeFile(filePath, buffer);
-  } catch (e) {}
+  } catch (e) {
+    throw new Error("Error taking screenshot and saving it: " + e.message);
+  }
 }
 
 module.exports = { takeScreenshotAndSave };

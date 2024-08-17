@@ -1,4 +1,6 @@
 const mlog = require("mocha-logger");
+const { ERROR_MESSAGES } = require("../constants/errorMessage");
+const { run } = require("../helpers/runFn");
 const {
   fillEmail,
   fillPhone,
@@ -6,6 +8,7 @@ const {
   payCheckout,
   waitForPaymentTransition,
   clickSaveMyInfo,
+  getSummaryAmount,
 } = require("../actions/module/actions-module");
 const { writeFile, createDirectory } = require("../lib/fs_utils");
 const { getFormattedDateTime } = require("../lib/date_utils");
@@ -15,19 +18,16 @@ const {
   PAYMENT_FLOW_TYPES,
   PAYMENT_REQUEST_TYPES,
 } = require("../enums/paymentFlowTypes");
+const {
+  DEV,
+  CHECKOUT_PAGE_URL,
+  SECURE_API,
+} = require("../constants/environment");
 const { logHeader } = require("../lib/logger");
 require("dotenv").config();
-const DEV = "DEV";
-const PAGE_URL = {
-  DEV: "https://dev-pago.payclip.com",
-  STAGE: "https://stage-pago.payclip.com",
-};
-const SECURE_API = {
-  DEV: "https://dev-api-secure.payclip.com/",
-  STAGE: "https://stage-api-secure.payclip.com/",
-};
 
 const env = (process.env.ENV || DEV).toUpperCase(); // environment;
+const SAVE_TEST_DIR = `completed_tests/test_runs`;
 
 async function taskCheckoutPay(page, data, test_run_id, results_run) {
   const DEFAULT_PAGE_TIMEOUT = 15000;
@@ -42,14 +42,18 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     payment_flow_type,
     payment_request_type,
     request_log_list,
+    i,
   } = data;
+
   let status = "OK";
+  let displayed_amount;
+
   try {
     logHeader(data, "PARAMETERS");
     logHeader({}, "GENERATING DIRECTORY...");
 
     createDirectory(
-      `completed_tests/test_runs/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}`,
+      `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}`,
       test_case_id
     );
 
@@ -68,7 +72,7 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       const request = response.request();
       if (
         request?.url() &&
-        (request?.url()?.startsWith(PAGE_URL[env]) ||
+        (request?.url()?.startsWith(CHECKOUT_PAGE_URL[env]) ||
           request?.url().startsWith(SECURE_API[env]))
       ) {
         const statusCode = await response?.status();
@@ -91,107 +95,132 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     const promises = [];
     startWaitingForEvents();
 
-    await targetPage.goto(`${PAGE_URL[env]}/${payment_request_id}`);
+    await targetPage.goto(`${CHECKOUT_PAGE_URL[env]}/${payment_request_id}`);
     await Promise.all(promises);
 
-    try {
-      await targetPage.keyboard.down("Meta");
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error pressing down Meta key");
+    {
+      // if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
+      //   logHeader({}, `Filling Email: ${test_case_id}`);
+      // await run(
+      //   fillEmail(targetPage, email),
+      //   ERROR_MESSAGES.FILL_EMAIL
+      // );
+      // }
+      mlog.error(`Filling Email: ${test_case_id}`);
+
+      await run(
+        async () => await fillEmail(targetPage, email),
+        ERROR_MESSAGES.FILL_EMAIL
+      );
+      mlog.error(`End Filling Email: ${test_case_id}`);
     }
 
-    try {
-      await targetPage.keyboard.up("Meta");
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error releasing Meta key");
-    }
+    {
+      //phone log
+      mlog.error(`Phone Log: ${test_case_id}`);
 
-    try {
-      if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
-        logHeader({}, `Filling Email: ${test_case_id}`);
-        await fillEmail(targetPage, email);
-      }
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error filling email");
-    }
-
-    try {
       if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
         logHeader({}, `Filling Phone ${test_case_id}`);
-        await fillPhone(targetPage, phone);
+        await run(
+          async () => await fillPhone(targetPage, phone),
+          ERROR_MESSAGES.FILL_PHONE
+        );
       }
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error filling phone");
+      mlog.error(`End Filling Phone: ${test_case_id}`);
     }
+    {
+      //screenshot log
 
-    try {
-      logHeader({}, `Filling Card: ${test_case_id}`);
-      await fillCard(targetPage, card);
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error filling card");
-    }
-
-    try {
-      if (payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
-        await clickSaveMyInfo(targetPage);
-      }
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error clicking save my info");
-    }
-
-    let displayed_amount;
-    try {
-      // Get amount of payment request displayed firstly without DCC and installments
-      displayed_amount = await targetPage.$eval(
-        "#__next > div.FormPayment_wrapFormPaymentDesktop__bnw2T > div.FormPayment_wrapOrderSummaryColum__ZGvRp > div.OrderSummary_wrapOrderSummary__gt6O5.OrderSummary_desktopStyles__j_lTJ > div > section.Breakdown_breakdownSection__CVqET.Breakdown_grayLight__hNAYk > section > div.Breakdown_totalRow__ED57c > span.text_span__Q4eOL.text_left__ZQekq.text_semibold__nVajh.text_xxs__x8CSG.text_surface950__Ebmcu > span",
-        (el) => el.textContent
-      );
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error getting displayed amount");
-    }
-
-    try {
       logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
-      // Save Checkout Form in screenshot
-      const pathImageForFormPage = `completed_tests/test_runs/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
-      await takeScreenshotAndSave(pathImageForFormPage, targetPage, BASE_DIR);
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error saving screenshot for form page fill");
+      const PATH_IMAGE_FORM_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
+      await takeScreenshotAndSave(PATH_IMAGE_FORM_PAGE, targetPage, BASE_DIR);
+      mlog.error(`End Filling Screen Log: ${test_case_id}`);
     }
-
-    try {
-      // Click in Pay
-      await payCheckout(page);
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error in pay Checkout");
+    {
+      logHeader({}, `Filling Card: ${test_case_id}`);
+      await run(
+        async () => await fillCard(targetPage, card),
+        ERROR_MESSAGES.FILL_CARD
+      );
     }
-
-    try {
-      // Wait for Loading transition page
-      await waitForPaymentTransition(page);
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error waiting for payment transition");
+    {
+      if (payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
+        await run(
+          async () => await clickSaveMyInfo(targetPage),
+          ERROR_MESSAGES.CLICK_SAVE_MY_INFO
+        );
+      }
     }
+    {
+      //TODO: Should throw error?
+      displayed_amount = await getSummaryAmount(page);
+    }
+    // logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
+    // const PATH_IMAGE_FORM_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
 
-    try {
+    // await takeScreenshotAndSave(PATH_IMAGE_FORM_PAGE, targetPage, BASE_DIR);
+    {
+      //Click pay button ----------------------------------------------------------------
+      await run(
+        async () => await payCheckout(page, i),
+        ERROR_MESSAGES.PAY_CHECKOUT
+      );
+    }
+    {
+      await run(
+        async () => await waitForPaymentTransition(page),
+        ERROR_MESSAGES.WAIT_PAYMENT_TRANSITION
+      );
+    }
+    {
       logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
-      const pathImageForSuccessPayPage = `completed_tests/test_runs/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`;
+      const PATH_IMAGE_SUCCESS_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`;
+
       await takeScreenshotAndSave(
-        pathImageForSuccessPayPage,
+        PATH_IMAGE_SUCCESS_PAGE,
         targetPage,
         BASE_DIR
       );
+    }
 
+    // {
+    //   //Generate result for excel
+    //   const result_test_case = [
+    //     test_case_id,
+    //     card,
+    //     email,
+    //     phone,
+    //     payment_request_id,
+    //     payment_flow_type,
+    //     displayed_amount,
+    //     payment_request_type,
+    //     getFormattedDateTime(),
+    //     status,
+    //   ];
+
+    //   results_run.push(result_test_case);
+
+    //   logHeader({}, `Save logs: ${test_case_id}`);
+    //   const PATH_LOG_SAVE_DIR =
+    //     BASE_DIR +
+    //     `/${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/logs.txt`;
+
+    //   logHeader({}, `Write Logs results: ${test_case_id}`);
+    //   setTimeout(
+    //     async () =>
+    //       await writeFile(
+    //         PATH_LOG_SAVE_DIR,
+    //         formatRequestLogs(request_log_list),
+    //         TIMEOUT_WAIT_LOGS
+    //       )
+    //   );
+    // }
+  } catch (e) {
+    failed = e;
+    mlog.error(`Error:  ${e}, /n Test_case_id: ${test_case_id}`);
+  } finally {
+    {
+      //Generate result for excel
       const result_test_case = [
         test_case_id,
         card,
@@ -208,25 +237,20 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       results_run.push(result_test_case);
 
       logHeader({}, `Save logs: ${test_case_id}`);
-      const path_logs_save =
+      const PATH_LOG_SAVE_DIR =
         BASE_DIR +
-        `/completed_tests/test_runs/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/logs.txt`;
+        `/${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/logs.txt`;
 
       logHeader({}, `Write Logs results: ${test_case_id}`);
       setTimeout(
         async () =>
           await writeFile(
-            path_logs_save,
+            PATH_LOG_SAVE_DIR,
             formatRequestLogs(request_log_list),
             TIMEOUT_WAIT_LOGS
           )
       );
-    } catch (e) {
-      status = "failed";
-      mlog.error(e, "Error during final steps");
     }
-  } catch (e) {
-    mlog.error(e, "Error in taskCheckoutPay");
   }
 }
 

@@ -90,6 +90,7 @@ describe("One Click", () => {
           payment_request_type: prType,
           payment_flow_type: paymentFlow,
           request_log_list: [],
+          i: i,
         };
         parameters.push(value);
       }
@@ -210,4 +211,5 @@ describe("One Click", () => {
   //     console.log(error);
   //   }
   // });
+  0;
 });
