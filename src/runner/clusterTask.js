@@ -98,126 +98,60 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     await targetPage.goto(`${CHECKOUT_PAGE_URL[env]}/${payment_request_id}`);
     await Promise.all(promises);
 
-    {
-      // if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
-      //   logHeader({}, `Filling Email: ${test_case_id}`);
-      // await run(
-      //   fillEmail(targetPage, email),
-      //   ERROR_MESSAGES.FILL_EMAIL
-      // );
-      // }
-      mlog.error(`Filling Email: ${test_case_id}`);
+    await run(
+      async () => await fillEmail(targetPage, email),
+      ERROR_MESSAGES.FILL_EMAIL
+    );
 
+    if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
+      logHeader({}, `Filling Phone ${test_case_id}`);
       await run(
-        async () => await fillEmail(targetPage, email),
-        ERROR_MESSAGES.FILL_EMAIL
+        async () => await fillPhone(targetPage, phone),
+        ERROR_MESSAGES.FILL_PHONE
       );
-      mlog.error(`End Filling Email: ${test_case_id}`);
     }
 
-    {
-      //phone log
-      mlog.error(`Phone Log: ${test_case_id}`);
+    logHeader({}, `Filling Card: ${test_case_id}`);
+    await run(
+      async () => await fillCard(targetPage, card),
+      ERROR_MESSAGES.FILL_CARD
+    );
 
-      if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
-        logHeader({}, `Filling Phone ${test_case_id}`);
-        await run(
-          async () => await fillPhone(targetPage, phone),
-          ERROR_MESSAGES.FILL_PHONE
-        );
-      }
-      mlog.error(`End Filling Phone: ${test_case_id}`);
-    }
-    {
-      //screenshot log
-
-      logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
-      const PATH_IMAGE_FORM_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
-      await takeScreenshotAndSave(PATH_IMAGE_FORM_PAGE, targetPage, BASE_DIR);
-      mlog.error(`End Filling Screen Log: ${test_case_id}`);
-    }
-    {
-      logHeader({}, `Filling Card: ${test_case_id}`);
+    if (payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
       await run(
-        async () => await fillCard(targetPage, card),
-        ERROR_MESSAGES.FILL_CARD
-      );
-    }
-    {
-      if (payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
-        await run(
-          async () => await clickSaveMyInfo(targetPage),
-          ERROR_MESSAGES.CLICK_SAVE_MY_INFO
-        );
-      }
-    }
-    {
-      //TODO: Should throw error?
-      displayed_amount = await getSummaryAmount(page);
-    }
-    // logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
-    // const PATH_IMAGE_FORM_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
-
-    // await takeScreenshotAndSave(PATH_IMAGE_FORM_PAGE, targetPage, BASE_DIR);
-    {
-      //Click pay button ----------------------------------------------------------------
-      await run(
-        async () => await payCheckout(page, i),
-        ERROR_MESSAGES.PAY_CHECKOUT
-      );
-    }
-    {
-      await run(
-        async () => await waitForPaymentTransition(page),
-        ERROR_MESSAGES.WAIT_PAYMENT_TRANSITION
-      );
-    }
-    {
-      logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
-      const PATH_IMAGE_SUCCESS_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`;
-
-      await takeScreenshotAndSave(
-        PATH_IMAGE_SUCCESS_PAGE,
-        targetPage,
-        BASE_DIR
+        async () => await clickSaveMyInfo(targetPage),
+        ERROR_MESSAGES.CLICK_SAVE_MY_INFO
       );
     }
 
-    // {
-    //   //Generate result for excel
-    //   const result_test_case = [
-    //     test_case_id,
-    //     card,
-    //     email,
-    //     phone,
-    //     payment_request_id,
-    //     payment_flow_type,
-    //     displayed_amount,
-    //     payment_request_type,
-    //     getFormattedDateTime(),
-    //     status,
-    //   ];
+    //Get the payment amount in the checkout page
+    displayed_amount = await getSummaryAmount(page);
 
-    //   results_run.push(result_test_case);
+    logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
+    const PATH_IMAGE_FORM_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
 
-    //   logHeader({}, `Save logs: ${test_case_id}`);
-    //   const PATH_LOG_SAVE_DIR =
-    //     BASE_DIR +
-    //     `/${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/logs.txt`;
+    await takeScreenshotAndSave(PATH_IMAGE_FORM_PAGE, targetPage);
 
-    //   logHeader({}, `Write Logs results: ${test_case_id}`);
-    //   setTimeout(
-    //     async () =>
-    //       await writeFile(
-    //         PATH_LOG_SAVE_DIR,
-    //         formatRequestLogs(request_log_list),
-    //         TIMEOUT_WAIT_LOGS
-    //       )
-    //   );
-    // }
+    //Click pay button ----------------------------------------------------------------
+    await run(
+      async () => await payCheckout(page, i),
+      ERROR_MESSAGES.PAY_CHECKOUT
+    );
+
+    await run(
+      async () => await waitForPaymentTransition(page),
+      ERROR_MESSAGES.WAIT_PAYMENT_TRANSITION
+    );
+
+    logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
+    const PATH_IMAGE_SUCCESS_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/success-pay-page.png`;
+
+    await takeScreenshotAndSave(PATH_IMAGE_SUCCESS_PAGE, targetPage);
   } catch (e) {
-    failed = e;
-    mlog.error(`Error:  ${e}, /n Test_case_id: ${test_case_id}`);
+    status = `Failed reason: { ${e} }`;
+    logHeader({}, `Save screenshot for  error ocurred: ${test_case_id}`);
+    const PATH_IMAGE_ERROR_HAPPENED = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/error-ocurred.png`;
+    await takeScreenshotAndSave(PATH_IMAGE_ERROR_HAPPENED, page);
   } finally {
     {
       //Generate result for excel

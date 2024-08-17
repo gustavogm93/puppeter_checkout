@@ -1,7 +1,7 @@
 const { writeFile } = require("../lib/fs_utils");
 const mlog = require("mocha-logger");
 
-async function takeScreenshotAndSave(pathImage, targetPage, baseDir) {
+async function takeScreenshotAndSave(pathImage, targetPage) {
   try {
     const buffer = await targetPage.screenshot({
       path: pathImage,

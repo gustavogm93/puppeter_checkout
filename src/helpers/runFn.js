@@ -4,7 +4,7 @@ async function run(fn, errorMessage) {
   try {
     await fn();
   } catch (e) {
-    mlog.error("error at" + errorMessage + ": " + e.message);
+    mlog.error(errorMessage + ": " + e.message);
     throw new Error(errorMessage + ": " + e.message);
   }
 }
@@ -13,7 +13,7 @@ async function runUncontrolled(fn, errorMessage) {
   try {
     await fn();
   } catch (e) {
-    mlog.error("error at" + errorMessage + ": " + e.message);
+    mlog.error(errorMessage + ": " + e.message);
   }
 }
 

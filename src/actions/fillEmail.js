@@ -22,7 +22,6 @@ async function fillEmail(page, email) {
     }
     {
       await targetPage.keyboard.up("V");
-      mlog.error("TERMINO INTERNO email------------------------ ");
     }
   } catch (e) {
     console.error(e);

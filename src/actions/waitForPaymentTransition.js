@@ -4,7 +4,7 @@ async function waitForPaymentTransition(page) {
   try {
     await page.waitForSelector(selector, { timeout });
   } catch (e) {
-    await page.waitForSelector(selector, { timeout });
+    throw new Error("Failed to get into payment transition page");
   }
 }
 

@@ -1,7 +1,6 @@
 const puppeteer = require("puppeteer");
 
 async function payCheckout(page, i) {
-  if (i == 2) throw new Error("Error en el test n: " + i);
   const timeout = 20000;
   await puppeteer.Locator.race([
     page.locator("::-p-aria(clip)"),
