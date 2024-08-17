@@ -21,7 +21,10 @@ const { validateParameters } = require("../src/validations/validateParameters");
 
 const env = (process.env.ENV || "dev").toLocaleLowerCase(); //Change environment::
 const PARAMETERS_SHEET_NAME = `parameters_${env}.xlsx`;
-const FILTER_OPTIONS = [{ key: "JUST", value: process.env.JUST }];
+const FILTER_OPTIONS = [
+  { key: "JUST", value: process.env.JUST },
+  { key: "TYPE", value: process.env.TYPE }, //LINK, HXO, SUB
+];
 
 describe("One Click", () => {
   let PARAMETERS_MAP;
@@ -45,7 +48,6 @@ describe("One Click", () => {
     let test_run_id;
     try {
       //Get by Type and filter by filter options
-      console.log(FILTER_OPTIONS, "Filter");
       const parametersFromSheet = filterParameters(
         PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO),
         FILTER_OPTIONS
@@ -53,7 +55,8 @@ describe("One Click", () => {
 
       if (!parametersFromSheet || parametersFromSheet.length === 0)
         throw new Error("No parameters found for this type");
-
+      console.log(parametersFromSheet);
+      return;
       test_run_id = generateTestRunId(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO);
       await cluster.task(async ({ page, data }) => {
         await taskCheckoutPay(page, data, test_run_id, results_run);

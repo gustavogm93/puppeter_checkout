@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "mocha  --timeout 60000",
-    "test:dev": "cross-env ENV=dev JUST=${npm_config_just} npm run test",
+    "test:dev": "cross-env ENV=dev JUST=${npm_config_just} TYPE=${npm_config_type} npm run test",
     "test:dev1": "cross-env ENV=dev JUST=1 npm run test",
     "test:stage": "cross-env ENV=stage npm run test"
   },

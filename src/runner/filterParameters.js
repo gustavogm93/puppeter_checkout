@@ -1,7 +1,17 @@
 //Parameter Filters
 const FILTERS = [
   { key: "JUST", fn: (val, limit) => val.slice(0, Number(limit)) },
+  {
+    key: "TYPE",
+    fn: (val, type) => val.filter((i) => i.prType === TYPE[type]),
+  },
 ]; //Get the N Parameter's
+
+const TYPE = {
+  LINK: "LINK_DE_PAGO",
+  SUB: "SUBSCRIPTION",
+  HXO: "HOSTED_CHECKOUT",
+};
 
 //Recibe los parametros y le aplica filtros
 function filterParameters(parameters, filterObj) {
@@ -12,7 +22,7 @@ function filterParameters(parameters, filterObj) {
   let res;
   filterObj.forEach((filterUnit) => {
     const foundFilter = FILTERS.find((filter) => filterUnit.key === filter.key);
-    res = foundFilter.fn(parameters, filterUnit.value);
+    res = foundFilter.fn(res || parameters, filterUnit.value);
   });
   return res;
 }
