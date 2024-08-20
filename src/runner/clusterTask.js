@@ -117,7 +117,10 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       ERROR_MESSAGES.FILL_CARD
     );
 
-    if (payment_flow_type === PAYMENT_FLOW_TYPES.GUEST) {
+    if (
+      PAYMENT_FLOW_TYPES.GUEST === payment_flow_type &&
+      PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT !== payment_request_type
+    ) {
       await run(
         async () => await clickSaveMyInfo(targetPage),
         ERROR_MESSAGES.CLICK_SAVE_MY_INFO

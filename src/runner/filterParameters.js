@@ -15,12 +15,13 @@ const TYPE = {
 
 //Recibe los parametros y le aplica filtros
 function filterParameters(parameters, filterObj) {
-  if (!filterObj || !filterObj.some((v) => v.value)) {
+  const filters = filterObj.filter((v) => v.value);
+  if (!filters || !filters.length === 0) {
     return parameters;
   }
 
   let res;
-  filterObj.forEach((filterUnit) => {
+  filters.forEach((filterUnit) => {
     const foundFilter = FILTERS.find((filter) => filterUnit.key === filter.key);
     res = foundFilter.fn(res || parameters, filterUnit.value);
   });
