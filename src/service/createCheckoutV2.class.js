@@ -86,7 +86,7 @@ class CreateCheckoutV2 extends CreateCheckout {
       const myHeaders = new fetch.Headers();
       const envToken = this.env === DEV ? "AUTH_DEV" : "AUTH_STAGE";
       const token = process.env[envToken];
-      myHeaders.append("x-api-key", token);
+      myHeaders.append("Authorization", token);
       myHeaders.append("Content-Type", "application/json");
       myHeaders.append(
         "Cookie",

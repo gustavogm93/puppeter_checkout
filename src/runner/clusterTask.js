@@ -1,5 +1,5 @@
 const mlog = require("mocha-logger");
-const { ERROR_MESSAGES } = require("../constants/errorMessage");
+const { ACTION_ERROR_MESSAGES } = require("../constants/errorMessage");
 const { run } = require("../helpers/runFn");
 const {
   fillEmail,
@@ -98,23 +98,25 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     await targetPage.goto(`${CHECKOUT_PAGE_URL[env]}/${payment_request_id}`);
     await Promise.all(promises);
 
-    await run(
-      async () => await fillEmail(targetPage, email),
-      ERROR_MESSAGES.FILL_EMAIL
-    );
+    if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
+      await run(
+        async () => await fillEmail(targetPage, email),
+        ACTION_ERROR_MESSAGES.FILL_EMAIL
+      );
+    }
 
     if (payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT) {
       logHeader({}, `Filling Phone ${test_case_id}`);
       await run(
         async () => await fillPhone(targetPage, phone),
-        ERROR_MESSAGES.FILL_PHONE
+        ACTION_ERROR_MESSAGES.FILL_PHONE
       );
     }
 
     logHeader({}, `Filling Card: ${test_case_id}`);
     await run(
       async () => await fillCard(targetPage, card),
-      ERROR_MESSAGES.FILL_CARD
+      ACTION_ERROR_MESSAGES.FILL_CARD
     );
 
     if (
@@ -123,7 +125,7 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     ) {
       await run(
         async () => await clickSaveMyInfo(targetPage),
-        ERROR_MESSAGES.CLICK_SAVE_MY_INFO
+        ACTION_ERROR_MESSAGES.CLICK_SAVE_MY_INFO
       );
     }
 
@@ -138,12 +140,12 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     //Click pay button ----------------------------------------------------------------
     await run(
       async () => await payCheckout(page, i),
-      ERROR_MESSAGES.PAY_CHECKOUT
+      ACTION_ERROR_MESSAGES.PAY_CHECKOUT
     );
 
     await run(
       async () => await waitForPaymentTransition(page),
-      ERROR_MESSAGES.WAIT_PAYMENT_TRANSITION
+      ACTION_ERROR_MESSAGES.WAIT_PAYMENT_TRANSITION
     );
 
     logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
@@ -152,6 +154,7 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     await takeScreenshotAndSave(PATH_IMAGE_SUCCESS_PAGE, targetPage);
   } catch (e) {
     status = `Failed reason: { ${e} }`;
+    mlog.error(e);
     logHeader({}, `Save screenshot for  error ocurred: ${test_case_id}`);
     const PATH_IMAGE_ERROR_HAPPENED = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/error-ocurred.png`;
     await takeScreenshotAndSave(PATH_IMAGE_ERROR_HAPPENED, page);

@@ -12,12 +12,12 @@ const SECURE_API = {
 
 const API = {
   V1: {
-    DEV: "https://testapi-gw.payclip.com/checkout",
+    DEV: "https://dev-api.payclip.com/checkout",
     STAGE: "https://stageapi-gw.payclip.com/checkout",
   },
   V2: {
-    DEV: "https://testapi-gw.payclip.com/checkout/v2",
-    STAGE: "https://stageapi-gw.payclip.com/checkout/v2",
+    DEV: "https://dev-api.payclip.com/v2/checkout",
+    STAGE: "https://stageapi-gw.payclip.com/v2/checkout",
   },
 };
 

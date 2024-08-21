@@ -1,4 +1,4 @@
-const ERROR_MESSAGES = {
+const ACTION_ERROR_MESSAGES = {
   META_KEY_DOWN: "Error pressing down Meta key",
   META_KEY_UP: "Error releasing Meta key",
   FILL_EMAIL: "Error filling email",
@@ -12,4 +12,4 @@ const ERROR_MESSAGES = {
   TASK_CHECKOUT_PAY: "Error in taskCheckoutPay",
 };
 
-module.exports = { ERROR_MESSAGES };
+module.exports = { ACTION_ERROR_MESSAGES };

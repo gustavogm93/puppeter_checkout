@@ -22,7 +22,11 @@ class CreateCheckout {
         return fetch(url, requestOptions)
           .then((response) => {
             if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
+              return response.text().then((errorMessage) => {
+                throw new Error(
+                  `status:[${response.status}] message:[${errorMessage}]`
+                );
+              });
             }
             return response.json();
           })
@@ -40,8 +44,9 @@ class CreateCheckout {
     console.log(results);
     results.forEach((result) => {
       if (result.error) {
-        console.error("Error:", result.error);
-        throw new Error("Error creating checkouts: " + result.error);
+        throw new Error(
+          "Failed at creating multiple hosted checkouts: " + result.error
+        );
       }
     });
 

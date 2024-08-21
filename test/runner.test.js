@@ -28,7 +28,6 @@ const FILTER_OPTIONS = [
 describe("One Click", () => {
   let PARAMETERS_MAP;
   let cluster;
-
   before(async () => {
     const buffer = readSheet(PARAMETERS_SHEET_NAME);
     PARAMETERS_MAP = mappingTypeWithParameters(buffer);
@@ -54,8 +53,10 @@ describe("One Click", () => {
         FILTER_OPTIONS
       );
 
-      if (!parametersFromSheet || parametersFromSheet.length === 0)
-        throw new Error("No parameters found for Link de pago");
+      if (!parametersFromSheet || parametersFromSheet.length === 0) {
+        mlog.log("No test cases parameters found for Link de pago");
+        return;
+      }
 
       test_run_id = generateTestRunId(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO);
       await cluster.task(async ({ page, data }) => {
@@ -115,46 +116,50 @@ describe("One Click", () => {
   });
 
   it("create and Pay Hosted Checkout", async () => {
+    const results_run = [];
+    let test_run_id;
     try {
       const parametersFromSheet = filterParameters(
         PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT),
         FILTER_OPTIONS
       );
 
-      if (!parametersFromSheet || parametersFromSheet.length === 0)
-        throw new Error("No parameters found for HXO requests");
+      if (!parametersFromSheet || parametersFromSheet.length === 0) {
+        mlog.log("No test cases parameters found for Hosted Checkout");
+        return;
+      }
 
       const _createCheckout = new CreateCheckoutV2(env.toUpperCase());
-      // const responsesCheckoutV2 = await executeMultipleCreateCheckoutsV2(
-      //   parametersFromSheet
-      // );
-      const responsesCheckoutV2 =
-        await _createCheckout.executeMultipleCreateCheckouts(
-          parametersFromSheet
-        );
-      // Add Pr Id to previous parameters
-      parametersFromSheet.map((param) => {
-        responsesCheckoutV2.filter(({ response, request }) => {
-          const { currency, amount, testCaseName } = request;
-          console.log(currency, amount, testCaseName);
 
-          if (
-            //Check all conditions to match arguments and PR id
-            param.testCaseName === testCaseName &&
-            param.currency === currency &&
-            param.amount === amount
-          ) {
-            param.prId = response.payment_request_id;
-          }
+      try {
+        const responsesCheckoutV2 =
+          await _createCheckout.executeMultipleCreateCheckouts(
+            parametersFromSheet
+          );
+        // Add Pr Id to previous parameters
+        parametersFromSheet.map((param) => {
+          responsesCheckoutV2.filter(({ response, request }) => {
+            const { currency, amount, testCaseName } = request;
+            console.log(currency, amount, testCaseName);
+
+            if (
+              //Check all conditions to match arguments and PR id
+              param.testCaseName === testCaseName &&
+              param.currency === currency &&
+              param.amount === amount
+            ) {
+              param.prId = response.payment_request_id;
+            }
+          });
+          return param;
         });
-        return param;
-      });
+      } catch (e) {
+        mlog.error("Error at creation multiple checkouts" + e);
+        return;
+      }
 
-      const results_run = [];
       let i = 0;
-      const test_run_id = generateTestRunId(
-        PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT
-      );
+      test_run_id = generateTestRunId(PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT);
 
       const cluster = await Cluster.launch({
         concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -213,7 +218,15 @@ describe("One Click", () => {
         `/completed_tests/test_runs/${test_run_id}/${test_run_id}`
       );
     } catch (error) {
-      console.log(error);
+      mlog.error(err);
+    } finally {
+      await cluster.idle();
+      await cluster.close();
+      logHeader({}, `Write Excel results: ${test_run_id}`);
+      generateSheet(
+        results_run,
+        `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.LINK_DE_PAGO.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
+      );
     }
   });
 });
