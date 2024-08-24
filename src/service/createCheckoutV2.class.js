@@ -14,8 +14,8 @@ class CreateCheckoutV2 extends CreateCheckout {
       const { currency, amount, email, phone } = data;
 
       const raw = JSON.stringify({
-        amount: 500,
-        currency: "MXN",
+        amount: amount,
+        currency: currency,
         purchase_description: "Hamburguesas 2x1 + 50% descuento & envío gratis",
         redirection_url: {
           success: "https://www.clip.mx/success",
@@ -37,8 +37,8 @@ class CreateCheckoutV2 extends CreateCheckout {
           me_reference_id: "HXO-000-043",
           customer_info: {
             name: "Dong Hyun Lee",
-            email: "ABC@gmail.com",
-            phone: "5212456721",
+            email: email,
+            phone: phone,
             matricula: "XXXX2",
           },
           shipping_address: {

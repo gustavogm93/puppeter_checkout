@@ -41,7 +41,6 @@ class CreateCheckout {
       })
     );
 
-    console.log(results);
     results.forEach((result) => {
       if (result.error) {
         throw new Error(

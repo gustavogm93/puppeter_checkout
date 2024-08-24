@@ -52,7 +52,6 @@ describe("One Click", () => {
         PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO),
         FILTER_OPTIONS
       );
-
       if (!parametersFromSheet || parametersFromSheet.length === 0) {
         mlog.log("No test cases parameters found for Link de pago");
         return;
@@ -140,7 +139,6 @@ describe("One Click", () => {
         parametersFromSheet.map((param) => {
           responsesCheckoutV2.filter(({ response, request }) => {
             const { currency, amount, testCaseName } = request;
-            console.log(currency, amount, testCaseName);
 
             if (
               //Check all conditions to match arguments and PR id
@@ -173,8 +171,10 @@ describe("One Click", () => {
       const parameters = [];
 
       //Create Run directory
-      await createDirectory("completed_tests/test_runs", test_run_id);
-
+      await createDirectory(
+        `completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT.toLocaleLowerCase()}`,
+        test_run_id
+      );
       //Get number of test cases by iterations.
       const ITERATIONS = parametersFromSheet.length;
 
@@ -225,7 +225,7 @@ describe("One Click", () => {
       logHeader({}, `Write Excel results: ${test_run_id}`);
       generateSheet(
         results_run,
-        `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.LINK_DE_PAGO.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
+        `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
       );
     }
   });

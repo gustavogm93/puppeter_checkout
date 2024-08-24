@@ -16,7 +16,7 @@ const TYPE = {
 //Recibe los parametros y le aplica filtros
 function filterParameters(parameters, filterObj) {
   const filters = filterObj.filter((v) => v.value);
-  if (!filters || !filters.length === 0) {
+  if (!filters || filters.length === 0) {
     return parameters;
   }
 
