@@ -13,6 +13,13 @@ const TYPE = {
   HXO: "HOSTED_CHECKOUT",
 };
 
+const noPresentTypeInFilters = (FILTER_OPTIONS, _type) => {
+  if (FILTER_OPTIONS.filter((t) => t.key === "TYPE").length > 0) {
+    return FILTER_OPTIONS.every((f) => TYPE[f.value] !== _type);
+  }
+  return false;
+};
+
 //Recibe los parametros y le aplica filtros
 function filterParameters(parameters, filterObj) {
   const filters = filterObj.filter((v) => v.value);
@@ -40,7 +47,7 @@ const keyName = FILTERS.find((filter) =>
 
 */
 
-module.exports = { filterParameters };
+module.exports = { filterParameters, noPresentTypeInFilters };
 
 // const parameters = [
 //   {

@@ -12,7 +12,10 @@ const {
   mappingTypeWithParameters,
 } = require("../src/lib/mappingTypeToParameters");
 const { PAYMENT_REQUEST_TYPES } = require("../src/enums/paymentFlowTypes");
-const { filterParameters } = require("../src/runner/filterParameters");
+const {
+  filterParameters,
+  noPresentTypeInFilters,
+} = require("../src/runner/filterParameters");
 require("dotenv").config();
 const { validateParameters } = require("../src/validations/validateParameters");
 const CreateCheckout = require("../src/service/createCheckout");
@@ -45,9 +48,20 @@ describe("One Click", () => {
   it("Pay Link de Pago", async () => {
     const results_run = [];
     let test_run_id;
+    let isSkipped = false;
     try {
-      //Get by Type and filter by filter options
+      //Skip tests if filter by no link de pago types::
+      if (
+        noPresentTypeInFilters(
+          FILTER_OPTIONS,
+          PAYMENT_REQUEST_TYPES.LINK_DE_PAGO
+        )
+      ) {
+        isSkipped = true;
+        return;
+      }
 
+      //Get by Type and filter by filter options
       const parametersFromSheet = filterParameters(
         PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO),
         FILTER_OPTIONS
@@ -106,18 +120,33 @@ describe("One Click", () => {
     } finally {
       await cluster.idle();
       await cluster.close();
-      logHeader({}, `Write Excel results: ${test_run_id}`);
-      generateSheet(
-        results_run,
-        `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.LINK_DE_PAGO.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
-      );
+      if (!isSkipped) {
+        logHeader({}, `Write Excel results: ${test_run_id}`);
+        generateSheet(
+          results_run,
+          `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.LINK_DE_PAGO.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
+        );
+      }
     }
   });
 
   it("create and Pay Hosted Checkout", async () => {
     const results_run = [];
     let test_run_id;
+    let isSkipped = false;
+
     try {
+      //Skip tests if filter by no hosted checkout types::
+      if (
+        noPresentTypeInFilters(
+          FILTER_OPTIONS,
+          PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT
+        )
+      ) {
+        isSkipped = true;
+        return;
+      }
+
       const parametersFromSheet = filterParameters(
         PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT),
         FILTER_OPTIONS
@@ -222,11 +251,14 @@ describe("One Click", () => {
     } finally {
       await cluster.idle();
       await cluster.close();
-      logHeader({}, `Write Excel results: ${test_run_id}`);
-      generateSheet(
-        results_run,
-        `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
-      );
+      //Save if is not skipped
+      if (!isSkipped) {
+        logHeader({}, `Write Excel results: ${test_run_id}`);
+        generateSheet(
+          results_run,
+          `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
+        );
+      }
     }
   });
 });

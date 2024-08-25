@@ -17,7 +17,7 @@ const API = {
   },
   V2: {
     DEV: "https://dev-api.payclip.com/v2/checkout",
-    STAGE: "https://stageapi-gw.payclip.com/v2/checkout",
+    STAGE: "https://stage-api.payclip.com/v2/checkout",
   },
 };
 

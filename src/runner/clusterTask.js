@@ -130,8 +130,8 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     }
 
     //Get the payment amount in the checkout page
-    // displayed_amount = await getSummaryAmount(page);
-    displayed_amount = "amount";
+    displayed_amount = await getSummaryAmount(page);
+
     logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
     const PATH_IMAGE_FORM_PAGE = `${SAVE_TEST_DIR}/${env}-${payment_request_type.toLocaleLowerCase()}/${test_run_id}/${test_case_id.toString()}/form-page-fill.png`;
 
