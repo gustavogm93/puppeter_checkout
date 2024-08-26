@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-async function payCheckout(page) {
+async function payCheckout(page, i) {
   const timeout = 20000;
   await puppeteer.Locator.race([
     page.locator("::-p-aria(clip)"),

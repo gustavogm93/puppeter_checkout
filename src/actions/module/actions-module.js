@@ -7,6 +7,7 @@ const {
   checkElementsInLoadingTransition,
 } = require("../checkElementsInLoadingTransition.js");
 const { clickSaveMyInfo } = require("../clickSaveMyInfo.js");
+const { getSummaryAmount } = require("../getSummaryAmount.js");
 
 module.exports = {
   clickSaveMyInfo,
@@ -16,4 +17,5 @@ module.exports = {
   waitForPaymentTransition,
   checkElementsInLoadingTransition,
   payCheckout,
+  getSummaryAmount,
 };

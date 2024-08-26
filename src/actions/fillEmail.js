@@ -1,8 +1,9 @@
 const puppeteer = require("puppeteer");
-
+const mlog = require("mocha-logger");
 async function fillEmail(page, email) {
   const timeout = 18000;
   const targetPage = page;
+  //Put a set timeout of 10 seconds and then wait for it
 
   try {
     {

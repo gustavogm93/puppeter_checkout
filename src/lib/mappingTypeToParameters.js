@@ -1,6 +1,6 @@
-const { PAYMENT_REQUEST_TYPES } = require("../test/enums/paymentFlowTypes");
-const { generateRandomEmail } = require("../data_sample");
-const { formatCardNumber } = require("../utils/format_utils");
+const { PAYMENT_REQUEST_TYPES } = require("../enums/paymentFlowTypes");
+const { generateRandomEmail } = require("./parameterUtils");
+const { formatCardNumber } = require("./format_utils");
 function mappingTypeWithParameters(data) {
   const mapParameters = new Map();
 

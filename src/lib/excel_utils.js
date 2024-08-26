@@ -3,11 +3,12 @@ const fs = require("fs");
 const path = require("path");
 
 const BASE_CSV_FILE = "base.xlsx";
-
+const BASE_DIR = process.cwd();
 function readSheet(fileName) {
   const REQUIRED_CSV_COLUMNS = 4;
+
   const workSheetsFromBuffer = xlsx.parse(
-    fs.readFileSync(`${__dirname}/${fileName}`)
+    fs.readFileSync(`${BASE_DIR}/${fileName}`)
   );
 
   //remove empty rows;
@@ -21,10 +22,10 @@ function readSheet(fileName) {
 function generateSheet(data, _path) {
   //Get base excel from /base.xlsx
   const workSheetsFromBuffer = xlsx.parse(
-    fs.readFileSync(`${__dirname}/${BASE_CSV_FILE}`)
+    fs.readFileSync(`${BASE_DIR}/${BASE_CSV_FILE}`)
   );
 
-  const filePath = path.join(__dirname, `${_path}_results.xlsx`);
+  const filePath = path.join(BASE_DIR, `${_path}_results.xlsx`);
 
   const range = { s: { c: 0, r: 0 }, e: { c: 0, r: 0 } };
   const sheetOptions = { "!merges": [range] };

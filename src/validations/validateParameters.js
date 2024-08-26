@@ -3,3 +3,5 @@ function validateParameters(map_parameters) {
     throw new Error("No parameters found in sheet");
   }
 }
+
+module.exports = { validateParameters };
