@@ -13,8 +13,8 @@ const { taskCheckoutPay } = require("../src/runner/clusterTask");
 const { generateTestRunId } = require("../src/lib/parameterUtils");
 const { createDirectory } = require("../src/lib/fs_utils");
 const { generateSheet } = require("../src/lib/excel_utils");
-const CreateCheckoutV2 = require("../src/service/createCheckoutV2.class");
 const { logHeader } = require("../src/lib/logger");
+const { createCheckouts } = require("../src/runner/checkoutCreator");
 
 require("dotenv").config();
 
@@ -70,23 +70,8 @@ describe("Checkout Payments", () => {
       }
 
       if (createCheckout) {
-        const _createCheckout = new CreateCheckoutV2(env.toUpperCase());
-        const responsesCheckoutV2 =
-          await _createCheckout.executeMultipleCreateCheckouts(
-            parametersFromSheet
-          );
-        parametersFromSheet = parametersFromSheet.map((param) => {
-          const matchingResponse = responsesCheckoutV2.find(
-            ({ response, request }) =>
-              param.testCaseName === request.testCaseName &&
-              param.currency === request.currency &&
-              param.amount === request.amount
-          );
-          if (matchingResponse) {
-            param.prId = matchingResponse.response.payment_request_id;
-          }
-          return param;
-        });
+        //Create Multiple Hosted Checkouts
+        parametersFromSheet = await createCheckouts(parametersFromSheet, env);
       }
 
       test_run_id = generateTestRunId(paymentType);
