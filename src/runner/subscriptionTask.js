@@ -1,18 +1,19 @@
 const puppeteer = require("puppeteer"); // v22.0.0 or later
-
-async function generateSubscription(page, data) {
+const { takeScreenshotAndSave } = require("../image/takeScreenshot");
+async function generateSubscription(
+  page,
+  baseUrl,
+  data,
+  TEST_CASE_ID_FULL_PATH
+) {
   try {
-    const { name, email, phone } = data;
-    const timeout = 5000;
+    const { email, phone, payment_request_id } = data;
+    const name = "abcdef a";
+    const timeout = 8000;
+    const url = `${baseUrl}/suscripcion/${payment_request_id}`;
+
     page.setDefaultTimeout(timeout);
 
-    {
-      const targetPage = page;
-      await targetPage.setViewport({
-        width: 1087,
-        height: 829,
-      });
-    }
     {
       const targetPage = page;
       const promises = [];
@@ -20,13 +21,12 @@ async function generateSubscription(page, data) {
         promises.push(targetPage.waitForNavigation());
       };
       startWaitingForEvents();
-      await targetPage.goto(
-        "https://dev-pago.payclip.com/suscripcion/6a053611-4c48-40e7-a65e-c1f8174ff194"
-      );
+      await targetPage.goto(url);
       await Promise.all(promises);
     }
     {
       const targetPage = page;
+
       await puppeteer.Locator.race([
         targetPage.locator("::-p-aria(Nombre)"),
         targetPage.locator("[data-testid='FormSubscription-inputName']"),
@@ -228,6 +228,63 @@ async function generateSubscription(page, data) {
     {
       const targetPage = page;
       await puppeteer.Locator.race([
+        targetPage.locator("div.FormSubscription_containerTerms__DPR_c input"),
+        targetPage.locator(
+          '::-p-xpath(//*[@data-testid=\\"FormSubscription-checkbox\\"]/input)'
+        ),
+        targetPage.locator(
+          ":scope >>> div.FormSubscription_containerTerms__DPR_c input"
+        ),
+      ])
+        .setTimeout(timeout)
+        .click({
+          offset: {
+            x: 2.5,
+            y: 10.625,
+          },
+        });
+    }
+    {
+      const targetPage = page;
+      await puppeteer.Locator.race([
+        targetPage.locator("div.FormSubscription_containerTerms__DPR_c input"),
+        targetPage.locator(
+          '::-p-xpath(//*[@data-testid=\\"FormSubscription-checkbox\\"]/input)'
+        ),
+        targetPage.locator(
+          ":scope >>> div.FormSubscription_containerTerms__DPR_c input"
+        ),
+      ])
+        .setTimeout(timeout)
+        .click({
+          offset: {
+            x: 2.5,
+            y: 10.625,
+          },
+        });
+    }
+    {
+      const targetPage = page;
+      await puppeteer.Locator.race([
+        targetPage.locator("div.FormSubscription_containerTerms__DPR_c input"),
+        targetPage.locator(
+          '::-p-xpath(//*[@data-testid=\\"FormSubscription-checkbox\\"]/input)'
+        ),
+        targetPage.locator(
+          ":scope >>> div.FormSubscription_containerTerms__DPR_c input"
+        ),
+      ])
+        .setTimeout(timeout)
+        .click({
+          offset: {
+            x: 2.5,
+            y: 10.625,
+          },
+        });
+    }
+    {
+      const targetPage = page;
+      await puppeteer.Locator.race([
         targetPage.locator(
           '::-p-aria(Suscribirme y pagar) >>>> ::-p-aria([role=\\"paragraph\\"])'
         ),
@@ -247,11 +304,14 @@ async function generateSubscription(page, data) {
             y: 6.625,
           },
         });
-    }
 
-    await browser.close();
+      const PATH_IMAGE_SUBSCRIPTION_FORM = `${TEST_CASE_ID_FULL_PATH}/subscription-form.png`;
+      await takeScreenshotAndSave(PATH_IMAGE_SUBSCRIPTION_FORM, targetPage);
+    }
   } catch (err) {
     console.error(err);
-    process.exit(1);
+  } finally {
   }
 }
+
+module.exports = { generateSubscription };

@@ -1,11 +1,13 @@
 const mlog = require("mocha-logger");
 const puppeteer = require("puppeteer");
 
-async function getSummaryAmount(targetPage) {
+async function getSummaryAmount(targetPage, isSubscription) {
   try {
-    const element = await targetPage.$(
-      '[data-test-id="breakdown-total-amount"]'
-    );
+    const subscriptionSelector =
+      "[data-testid='ResumeSubscription-amountTotal']";
+    const onePaySelector = "[data-test-id='breakdown-total-amount']";
+    const selector = isSubscription ? subscriptionSelector : onePaySelector;
+    const element = await targetPage.$(selector);
     const amount = await element.evaluate((x) => x.textContent);
     return amount;
   } catch (e) {

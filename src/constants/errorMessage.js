@@ -10,6 +10,8 @@ const ACTION_ERROR_MESSAGES = {
   WAIT_PAYMENT_TRANSITION: "Error waiting for payment transition",
   FINAL_STEPS: "Error during final steps",
   TASK_CHECKOUT_PAY: "Error in taskCheckoutPay",
+  GENERATING_SUBSCRIPTION: "Error generating subscription",
+  PAYMENT_SUCCESS: "Error getting into success payment page",
 };
 
 module.exports = { ACTION_ERROR_MESSAGES };

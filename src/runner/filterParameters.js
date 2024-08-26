@@ -14,9 +14,11 @@ const TYPE = {
 };
 
 const noPresentTypeInFilters = (FILTER_OPTIONS, _type) => {
-  if (FILTER_OPTIONS.filter((t) => t.key === "TYPE").length > 0) {
-    return FILTER_OPTIONS.every((f) => TYPE[f.value] !== _type);
+  const typeOption = FILTER_OPTIONS.find((t) => t.key === "TYPE");
+  if (typeOption?.value) {
+    return TYPE[typeOption.value] !== _type;
   }
+
   return false;
 };
 
