@@ -17,7 +17,7 @@ const { getFormattedDateTime } = require("../lib/date_utils");
 const { takeScreenshotAndSave } = require("../image/takeScreenshot");
 const { formatRequestLogs } = require("../lib/formatRequestLogs");
 const {
-  PAYMENT_FLOW_TYPES,
+  PAYMENT_FLOWS,
   PAYMENT_REQUEST_TYPES,
 } = require("../enums/paymentFlowTypes");
 const {
@@ -155,7 +155,7 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     );
 
     if (
-      PAYMENT_FLOW_TYPES.GUEST === payment_flow_type &&
+      PAYMENT_FLOWS.GUEST === payment_flow_type &&
       PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT !== payment_request_type
     ) {
       await run(
