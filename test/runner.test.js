@@ -28,7 +28,7 @@ const FILTER_OPTIONS = [
   { key: "TYPE", value: process.env.TYPE }, //LINK, HXO, SUB
 ];
 
-describe("One Click", () => {
+describe("Checkout Payments", () => {
   let PARAMETERS_MAP;
   let cluster;
   before(async () => {
@@ -57,10 +57,10 @@ describe("One Click", () => {
           PAYMENT_REQUEST_TYPES.LINK_DE_PAGO
         )
       ) {
+        mlog.log("Skip Link de pago tests");
         isSkipped = true;
         return;
       }
-
       //Get by Type and filter by filter options
       const parametersFromSheet = filterParameters(
         PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO),
@@ -130,7 +130,7 @@ describe("One Click", () => {
     }
   });
 
-  it("create and Pay Hosted Checkout", async () => {
+  it("Create and Pay Hosted Checkout", async () => {
     const results_run = [];
     let test_run_id;
     let isSkipped = false;
@@ -143,6 +143,7 @@ describe("One Click", () => {
           PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT
         )
       ) {
+        mlog.log("Skip Hosted Checkout tests");
         isSkipped = true;
         return;
       }
@@ -188,11 +189,6 @@ describe("One Click", () => {
       let i = 0;
       test_run_id = generateTestRunId(PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT);
 
-      const cluster = await Cluster.launch({
-        concurrency: Cluster.CONCURRENCY_CONTEXT,
-        maxConcurrency: 4,
-      });
-
       await cluster.task(async ({ page, data }) => {
         await taskCheckoutPay(page, data, test_run_id, results_run);
       });
@@ -237,26 +233,103 @@ describe("One Click", () => {
       parameters.map(async (p) => {
         await cluster.execute(p);
       });
-
-      await cluster.idle();
-      await cluster.close();
-
-      logHeader({}, `Write Excel results: ${test_run_id}`);
-      generateSheet(
-        results_run,
-        `/completed_tests/test_runs/${test_run_id}/${test_run_id}`
-      );
     } catch (error) {
       mlog.error(err);
     } finally {
+      //Save if is not skipped
       await cluster.idle();
       await cluster.close();
-      //Save if is not skipped
       if (!isSkipped) {
         logHeader({}, `Write Excel results: ${test_run_id}`);
         generateSheet(
           results_run,
           `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
+        );
+      }
+    }
+  });
+
+  it("Create and Pay Subscription", async () => {
+    const results_run = [];
+    let test_run_id;
+    let isSkipped = false;
+    try {
+      //Skip tests if filter by no Subscriptions types::
+      if (
+        noPresentTypeInFilters(
+          FILTER_OPTIONS,
+          PAYMENT_REQUEST_TYPES.SUBSCRIPTION
+        )
+      ) {
+        mlog.log("Skip Subscription tests");
+        isSkipped = true;
+        return;
+      }
+
+      //Get by Type and filter by filter options
+      const parametersFromSheet = filterParameters(
+        PARAMETERS_MAP.get(PAYMENT_REQUEST_TYPES.SUBSCRIPTION),
+        FILTER_OPTIONS
+      );
+      if (!parametersFromSheet || parametersFromSheet.length === 0) {
+        mlog.log("No test cases parameters found for Subscription");
+        return;
+      }
+      test_run_id = generateTestRunId(PAYMENT_REQUEST_TYPES.SUBSCRIPTION);
+
+      await cluster.task(async ({ page, data }) => {
+        await taskCheckoutPay(page, data, test_run_id, results_run);
+      });
+
+      const parameters = [];
+
+      //Create Run directory
+      await createDirectory(
+        `completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.SUBSCRIPTION.toLocaleLowerCase()}`,
+        test_run_id
+      );
+
+      const ITERATIONS = parametersFromSheet.length;
+
+      for (let i = 0; i < ITERATIONS; i++) {
+        const data = parametersFromSheet[i];
+        const {
+          testCaseName,
+          cardNumber,
+          prId,
+          prType,
+          paymentFlow,
+          phone,
+          email,
+        } = data;
+
+        const value = {
+          test_case_id: testCaseName,
+          card: cardNumber,
+          email: email,
+          phone: phone,
+          payment_request_id: prId,
+          payment_request_type: prType,
+          payment_flow_type: paymentFlow,
+          request_log_list: [],
+          i: i,
+        };
+        parameters.push(value);
+      }
+
+      parameters.forEach(async (p) => {
+        await cluster.execute(p);
+      });
+    } catch (err) {
+      mlog.error(err);
+    } finally {
+      await cluster.idle();
+      await cluster.close();
+      if (!isSkipped) {
+        logHeader({}, `Write Excel results: ${test_run_id}`);
+        generateSheet(
+          results_run,
+          `/completed_tests/test_runs/${env.toUpperCase()}-${PAYMENT_REQUEST_TYPES.SUBSCRIPTION.toLocaleLowerCase()}/${test_run_id}/${test_run_id}`
         );
       }
     }

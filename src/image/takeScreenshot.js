@@ -3,7 +3,7 @@ const mlog = require("mocha-logger");
 
 async function takeScreenshotAndSave(pathImage, targetPage) {
   try {
-    const buffer = await targetPage.screenshot({
+    await targetPage.screenshot({
       path: pathImage,
       fullPage: true,
     });
