@@ -40,7 +40,6 @@ function generateSheet(data, _path) {
     if (err) {
       return console.error(`Error writing file: ${err}`);
     }
-    console.log(`Buffer saved to ${filePath}`);
   });
 }
 

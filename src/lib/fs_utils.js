@@ -9,7 +9,6 @@ async function writeFile(filePath, buffer) {
       if (err) {
         return console.error(`Error writing file: ${err}`);
       }
-      console.log(`Buffer saved to ${filePath}`);
     });
   } catch (e) {
     mlog.error(e);
@@ -22,7 +21,6 @@ async function createDirectory(relativePath, folderName) {
 
   const pathRelative = "/" + relativePaths.join("/");
   const __rootDir = process.cwd();
-  console.log(pathRelative);
 
   const dirPath = path.join(__rootDir, relativePaths.join("/"));
 

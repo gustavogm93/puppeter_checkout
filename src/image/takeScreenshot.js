@@ -1,5 +1,3 @@
-const { writeFile } = require("../lib/fs_utils");
-const mlog = require("mocha-logger");
 
 async function takeScreenshotAndSave(pathImage, targetPage) {
   try {

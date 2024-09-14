@@ -13,8 +13,10 @@ const { taskCheckoutPay } = require("../src/runner/clusterTask");
 const { generateTestRunId } = require("../src/lib/parameterUtils");
 const { createDirectory } = require("../src/lib/fs_utils");
 const { generateSheet } = require("../src/lib/excel_utils");
-const { logHeader } = require("../src/lib/logger");
+const { logHeader, logStart } = require("../src/lib/logger");
 const { createCheckouts } = require("../src/runner/checkoutCreator");
+const mlog = require("mocha-logger");
+var expect = require('expect.js');
 
 require("dotenv").config();
 
@@ -25,7 +27,9 @@ const FILTER_OPTIONS = [
   { key: "TYPE", value: process.env.TYPE },
 ];
 
-describe("Checkout Payments", () => {
+
+
+describe("Buyer Checkout Testing Payments", () => {
   let PARAMETERS_MAP;
   let cluster;
 
@@ -33,7 +37,7 @@ describe("Checkout Payments", () => {
     const buffer = readSheet(PARAMETERS_SHEET_NAME);
     PARAMETERS_MAP = mappingTypeWithParameters(buffer);
     validateParameters(PARAMETERS_MAP);
-    console.log("Filter options => ", JSON.stringify(FILTER_OPTIONS));
+    mlog.log("Filter options => ", JSON.stringify(FILTER_OPTIONS.filter((v) => v.value)));
 
     cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -42,8 +46,9 @@ describe("Checkout Payments", () => {
   });
 
   after(async () => {
+    await cluster.idle();
     await cluster.close();
-  });
+  })
 
   const runTest = async (paymentType, createCheckout = false) => {
     const results_run = [];
@@ -55,8 +60,11 @@ describe("Checkout Payments", () => {
       if (noPresentTypeInFilters(FILTER_OPTIONS, paymentType)) {
         console.log(`Skip ${paymentType} tests`);
         isSkipped = true;
+        expect(true).to.be(true)
         return;
       }
+
+      logStart(paymentType);
 
       let parametersFromSheet = filterParameters(
         PARAMETERS_MAP.get(paymentType),
@@ -64,7 +72,7 @@ describe("Checkout Payments", () => {
       );
 
       if (!parametersFromSheet || parametersFromSheet.length === 0) {
-        console.log(`No test cases parameters found for ${paymentType}`);
+        mlog.log(`No test cases parameters found for ${paymentType}`);
         hasParameters = false;
         return;
       }
@@ -109,13 +117,15 @@ describe("Checkout Payments", () => {
       }
     }
   };
+  //que filtre por el IT npm run test
 
   it("Pay Link de Pago", async () => {
     await runTest(PAYMENT_REQUEST_TYPES.LINK_DE_PAGO);
   });
 
   it("Create and Pay Hosted Checkout", async () => {
-    await runTest(PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT, true);
+    const CreateHXOCheckouts = true;
+    await runTest(PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT, CreateHXOCheckouts);
   });
 
   it("Create and Pay Subscription", async () => {

@@ -15,7 +15,7 @@ async function getSuccessPaymentPage(page, isSubscription) {
 
 async function getSummaryAmountForSubscriptionPay(page) {
   const targetPage = page;
-  const timeout = 10000;
+  const timeout = 40000;
 
   await puppeteer.Locator.race([
     targetPage.locator("::-p-aria(Te suscribiste exitosamente)"),

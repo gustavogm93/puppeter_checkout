@@ -2,22 +2,25 @@
   "scripts": {
     "version": "0.0.1",
     "test": "mocha  --timeout 60000",
-    "test:dev": "cross-env ENV=dev JUST=${npm_config_just} TYPE=${npm_config_type} npm run test",
+    "test:dev": "cross-env ENV=dev JUST=${npm_config_just} TYPE=${npm_config_type} RECORD=${npm_config_record} npm run test",
     "test:dev1": "cross-env ENV=dev JUST=1 npm run test",
-    "test:stage": "cross-env ENV=stage JUST=${npm_config_just} TYPE=${npm_config_type} npm run test",
+    "test:stage": "cross-env ENV=stage JUST=${npm_config_just} TYPE=${npm_config_type} RECORD=${npm_config_record} npm run test",
     "unit": "jest --testMatch=\"**/__tests__/**/*.test.js\""
   },
   "dependencies": {
     "chai": "^5.1.1",
     "dotenv": "^16.4.5",
+    "expect.js": "^0.3.1",
     "mocha": "^10.7.0",
     "mocha-logger": "^1.0.8",
     "node-fetch": "^2.6.6",
     "node-xlsx": "^0.24.0",
     "puppeteer": "^22.14.0",
     "puppeteer-cluster": "^0.24.0",
+    "puppeteer-screen-recorder": "^3.0.5",
+    "puppeteer-video-recorder": "^1.0.5",
     "request": "^2.88.2",
-    "request-promise-native": "^1.0.9",
+    "request-promise-native": "^0.0.0",
     "selenium-webdriver": "^4.23.0",
     "xlsx": "^0.18.5"
   },

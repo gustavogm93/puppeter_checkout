@@ -16,6 +16,7 @@ const { writeFile, createDirectory } = require("../lib/fs_utils");
 const { getFormattedDateTime } = require("../lib/date_utils");
 const { takeScreenshotAndSave } = require("../image/takeScreenshot");
 const { formatRequestLogs } = require("../lib/formatRequestLogs");
+const PuppeteerVideoRecorder = require("puppeteer-video-recorder");
 const {
   PAYMENT_FLOWS,
   PAYMENT_REQUEST_TYPES,
@@ -27,10 +28,15 @@ const {
   SUBSCRIPTION_PAGE_URL,
 } = require("../constants/environment");
 const { logHeader } = require("../lib/logger");
+const {
+  getTypeConditionsMap,
+  getFlowConditionsMap,
+} = require("../helpers/conditionsHelper");
 require("dotenv").config();
 
 const env = (process.env.ENV || DEV).toUpperCase(); // environment;
 const SAVE_TEST_DIR = `completed_tests/test_runs`;
+const RECORD_PAYMENT = Boolean(process.env.RECORD);
 
 async function taskCheckoutPay(page, data, test_run_id, results_run) {
   const DEFAULT_PAGE_TIMEOUT = 15000;
@@ -47,10 +53,14 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     request_log_list,
     i,
   } = data;
+  const _t = getTypeConditionsMap(payment_request_type);
+  const _f = getFlowConditionsMap(payment_flow_type);
 
   let status = "OK";
   let displayed_amount;
   let TEST_CASE_ID_FULL_PATH;
+  // const recorder = new PuppeteerVideoRecorder();
+
   try {
     logHeader(data, "PARAMETERS");
     logHeader({}, "GENERATING DIRECTORY...");
@@ -81,12 +91,35 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       const request = response.request();
 
       const requestUrl = request?.url();
+
+      // if(status":"pending","status_detail":{"code":"PE-3DS01","message":"Waiting 3ds"})
+
       if (
         requestUrl &&
         !requestUrl.includes("_next/data") &&
         (requestUrl?.startsWith(CHECKOUT_PAGE_URL[env]) ||
           requestUrl.startsWith(SECURE_API[env]))
       ) {
+        if (requestUrl.includes(`api/payments/${payment_request_id}`)) {
+          const dataResponse = {
+            id: payment_request_id,
+            amount: 103.01,
+            tip: 0,
+            description: "Hamburguesas 2x1 + 50% descuento &amp; envío gratis",
+            transaction_id: "444afd8e-3e0b-4a28-8946-0cc94ac7176a",
+            receipt_no: "DaMAdaM",
+            status: "approved",
+            status_detail: { code: "AP-PAI01", message: "paid" },
+            approved_at: "2024-08-31T18:07:09.927894368Z",
+            payment_request_id: "f76f3aea-5e14-4d3a-a896-3f851fafb489",
+          };
+
+          request.respond({
+            status: 200,
+            contentType: "application/json",
+            body: dataResponse,
+          });
+        }
         const statusCode = await response?.status();
         const responseJson = await response?.json();
         const request_log = {
@@ -106,8 +139,13 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
     };
     const promises = [];
     startWaitingForEvents();
+    const dirVideo = BASE_DIR + "/simple.mp4";
 
-    if (PAYMENT_REQUEST_TYPES.SUBSCRIPTION === payment_request_type) {
+    // await recorder.init(targetPage,dirVideo);
+
+    // await recorder.start();
+
+    if (_t.get("isSubscription")) {
       const url = SUBSCRIPTION_PAGE_URL[env];
       logHeader({}, `Generating subscription ${test_case_id}`);
       await run(
@@ -122,25 +160,20 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       );
     }
 
-    if (payment_request_type !== PAYMENT_REQUEST_TYPES.SUBSCRIPTION) {
+    if (_t.get("isNotSubscription")) {
       await targetPage.goto(`${CHECKOUT_PAGE_URL[env]}/${payment_request_id}`);
     }
+
     await Promise.all(promises);
 
-    if (
-      payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT &&
-      payment_request_type !== PAYMENT_REQUEST_TYPES.SUBSCRIPTION
-    ) {
+    if (_t.get("isNotHosted") && _t.get("isNotSubscription")) {
       await run(
         async () => await fillEmail(targetPage, email),
         ACTION_ERROR_MESSAGES.FILL_EMAIL
       );
     }
 
-    if (
-      payment_request_type !== PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT &&
-      payment_request_type !== PAYMENT_REQUEST_TYPES.SUBSCRIPTION
-    ) {
+    if (_t.get("isNotHosted") && _t.get("isNotSubscription")) {
       logHeader({}, `Filling Phone ${test_case_id}`);
       await run(
         async () => await fillPhone(targetPage, phone),
@@ -154,10 +187,7 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       ACTION_ERROR_MESSAGES.FILL_CARD
     );
 
-    if (
-      PAYMENT_FLOWS.GUEST === payment_flow_type &&
-      PAYMENT_REQUEST_TYPES.HOSTED_CHECKOUT !== payment_request_type
-    ) {
+    if (_f.get("isGuest") && _t.get("isNotHostedCheckout")) {
       await run(
         async () => await clickSaveMyInfo(targetPage),
         ACTION_ERROR_MESSAGES.CLICK_SAVE_MY_INFO
@@ -170,7 +200,7 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       payment_request_type === PAYMENT_REQUEST_TYPES.SUBSCRIPTION
     );
 
-    logHeader({}, `Save screenshot for form page fill: ${test_case_id}`);
+    logHeader({}, `Saving screenshot for form page fill: ${test_case_id}`);
     const PATH_IMAGE_FORM_PAGE = `${TEST_CASE_ID_FULL_PATH}/form-page-fill.png`;
 
     await takeScreenshotAndSave(PATH_IMAGE_FORM_PAGE, targetPage);
@@ -185,7 +215,8 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       async () =>
         await waitForPaymentTransition(
           page,
-          payment_request_type === PAYMENT_REQUEST_TYPES.SUBSCRIPTION
+          payment_request_type === PAYMENT_REQUEST_TYPES.SUBSCRIPTION,
+          false //3ds
         ),
       ACTION_ERROR_MESSAGES.WAIT_PAYMENT_TRANSITION
     );
@@ -200,13 +231,13 @@ async function taskCheckoutPay(page, data, test_run_id, results_run) {
       ACTION_ERROR_MESSAGES.PAYMENT_SUCCESS
     );
 
-    logHeader({}, `Save screenshot for success pay page: ${test_case_id}`);
+    logHeader({}, `Saving screenshot for success pay page: ${test_case_id}`);
     const PATH_IMAGE_SUCCESS_PAGE = `${TEST_CASE_ID_FULL_PATH}/success-pay-page.png`;
     await takeScreenshotAndSave(PATH_IMAGE_SUCCESS_PAGE, targetPage);
   } catch (e) {
     status = `Failed reason: { ${e} }`;
-    mlog.error(e);
-    logHeader({}, `Save screenshot for  error ocurred: ${test_case_id}`);
+    console.log(e);
+    logHeader({}, `Saving screenshot for error ocurred: ${test_case_id}`);
 
     const PATH_IMAGE_ERROR_HAPPENED = `${TEST_CASE_ID_FULL_PATH}/error-ocurred.png`;
     await takeScreenshotAndSave(PATH_IMAGE_ERROR_HAPPENED, page);

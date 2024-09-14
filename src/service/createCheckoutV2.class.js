@@ -69,10 +69,6 @@ class CreateCheckoutV2 extends CreateCheckout {
           },
           source: "xo-hosted",
         },
-        custom_payment_options: {
-          tip_enabled: true,
-          payment_method_types: ["cash", "credit", "debit"],
-        },
       });
       return raw;
     } catch (error) {
